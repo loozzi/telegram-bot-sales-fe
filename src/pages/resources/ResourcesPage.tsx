@@ -14,7 +14,7 @@ const resourceSchema = z.object({
     name: z.string().min(1, 'Name is required').max(100),
     resource_type: z.string().min(1, 'Type is required').max(50),
     description: z.string().max(500).optional(),
-    price: z.coerce.number().min(0, 'Price must be positive'),
+    price: z.number().min(0, 'Price must be positive'),
 });
 
 type ResourceForm = z.infer<typeof resourceSchema>;
@@ -287,7 +287,7 @@ export function ResourcesPage() {
                                         type="number"
                                         className={`form-input ${errors.price ? 'error' : ''}`}
                                         placeholder="0"
-                                        {...register('price')}
+                                        {...register('price', { valueAsNumber: true })}
                                     />
                                     {errors.price && (
                                         <span className="form-error">{errors.price.message}</span>
