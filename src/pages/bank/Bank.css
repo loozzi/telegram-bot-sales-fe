@@ -1,0 +1,131 @@
+.filters-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.filter-icon {
+    color: var(--text-muted);
+}
+
+.table-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 15, 35, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.table-container {
+    position: relative;
+}
+
+.direction-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.direction-badge.in {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.direction-badge.out {
+    background: var(--error-bg);
+    color: var(--error);
+}
+
+.bank-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.bank-name {
+    font-weight: 500;
+}
+
+.bank-number {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.amount {
+    font-weight: 600;
+    font-family: monospace;
+}
+
+.amount.in {
+    color: var(--success);
+}
+
+.amount.out {
+    color: var(--error);
+}
+
+.description {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+th.sortable:hover {
+    background: var(--bg-hover);
+}
+
+th.sortable svg {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 0;
+}
+
+.pagination-info {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-page {
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 0 12px;
+}
+
+@media (max-width: 768px) {
+    .filters-row {
+        flex-wrap: wrap;
+    }
+
+    .filter-icon {
+        display: none;
+    }
+}

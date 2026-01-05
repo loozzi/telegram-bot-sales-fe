@@ -1,0 +1,123 @@
+.filters-row {
+    display: flex;
+    gap: 16px;
+}
+
+.filters-row .form-group {
+    flex: 1;
+    max-width: 250px;
+}
+
+.inventory-stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.stat-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.stat-badge.available {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.stat-badge.sold {
+    background: var(--info-bg);
+    color: var(--info);
+}
+
+.inventory-content {
+    font-family: monospace;
+    font-size: 13px;
+    background: var(--bg-secondary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    word-break: break-all;
+}
+
+.status-toggle {
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.status-toggle.available {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.status-toggle.available:hover {
+    background: var(--success);
+    color: white;
+}
+
+.status-toggle.sold {
+    background: var(--text-muted);
+    color: var(--bg-primary);
+}
+
+.table tbody tr.sold {
+    opacity: 0.6;
+}
+
+/* Upload Zone */
+.upload-zone {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.upload-zone:hover {
+    border-color: var(--accent-primary);
+    background: var(--bg-hover);
+}
+
+.upload-icon {
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.upload-text {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.upload-hint {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.delete-preview {
+    display: block;
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    font-size: 13px;
+    word-break: break-all;
+}
+
+@media (max-width: 640px) {
+    .filters-row {
+        flex-direction: column;
+    }
+
+    .filters-row .form-group {
+        max-width: none;
+    }
+}

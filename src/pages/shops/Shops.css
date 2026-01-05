@@ -1,0 +1,116 @@
+.shops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 20px;
+}
+
+.shop-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.shop-card-header {
+    display: flex;
+    gap: 16px;
+}
+
+.shop-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--accent-gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.shop-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.shop-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.shop-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.shop-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.shop-token {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.token-label {
+    color: var(--text-muted);
+}
+
+.token-value {
+    font-family: monospace;
+    background: var(--bg-primary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.shop-support-channel,
+.shop-support-group,
+.shop-policy {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.meta-label {
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.meta-value {
+    color: var(--text-secondary);
+    word-break: break-word;
+}
+
+.shop-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.shop-actions .btn:first-child {
+    flex: 1;
+}
+
+textarea.form-input {
+    resize: vertical;
+    min-height: 80px;
+}
+
+@media (max-width: 640px) {
+    .shops-grid {
+        grid-template-columns: 1fr;
+    }
+}

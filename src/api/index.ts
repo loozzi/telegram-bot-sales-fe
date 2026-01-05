@@ -1,0 +1,9 @@
+export { default as apiClient } from './client';
+export { default as authApi } from './auth';
+export { default as shopsApi } from './shops';
+export { default as resourcesApi } from './resources';
+export { default as inventoriesApi } from './inventories';
+export { default as bankApi } from './bank';
+export { default as botApi } from './bot';
+export { default as paymentsApi } from './payments';
+export { default as ordersApi } from './orders';
