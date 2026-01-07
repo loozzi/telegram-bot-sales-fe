@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Package, Edit2, Trash2, X, Check } from 'lucide-react';
+import { Plus, Package, Edit2, Trash2, X, Check, Power } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,6 +15,7 @@ const resourceSchema = z.object({
     resource_type: z.string().min(1, 'Type is required').max(50),
     description: z.string().max(500).optional(),
     price: z.number().min(0, 'Price must be positive'),
+    is_active: z.boolean(),
 });
 
 type ResourceForm = z.infer<typeof resourceSchema>;
@@ -68,6 +69,16 @@ export function ResourcesPage() {
         onError: () => toast.error('Failed to delete resource'),
     });
 
+    const toggleStatusMutation = useMutation({
+        mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+            resourcesApi.updateStatus(id, isActive),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['resources'] });
+            toast.success('Status updated!');
+        },
+        onError: () => toast.error('Failed to update status'),
+    });
+
     const {
         register,
         handleSubmit,
@@ -79,7 +90,7 @@ export function ResourcesPage() {
 
     const openCreateModal = () => {
         setEditingResource(null);
-        reset({ shop_id: selectedShopId, name: '', resource_type: '', description: '', price: 0 });
+        reset({ shop_id: selectedShopId, name: '', resource_type: '', description: '', price: 0, is_active: true });
         setIsModalOpen(true);
     };
 
@@ -91,6 +102,7 @@ export function ResourcesPage() {
             resource_type: resource.resource_type,
             description: resource.description || '',
             price: resource.price,
+            is_active: resource.is_active,
         });
         setIsModalOpen(true);
     };
@@ -186,12 +198,13 @@ export function ResourcesPage() {
                                 <th>Type</th>
                                 <th>Description</th>
                                 <th>Price</th>
+                                <th style={{ width: 100 }}>Status</th>
                                 <th style={{ width: 120 }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {resourcesData?.items?.map((resource) => (
-                                <tr key={resource.id}>
+                                <tr key={resource.id} className={!resource.is_active ? 'opacity-60' : ''}>
                                     <td className="font-medium">{resource.name}</td>
                                     <td>
                                         <span className="badge badge-info">{resource.resource_type}</span>
@@ -200,6 +213,18 @@ export function ResourcesPage() {
                                         {resource.description || '-'}
                                     </td>
                                     <td className="font-semibold">{formatPrice(resource.price)}</td>
+                                    <td>
+                                        <button
+                                            className={`btn btn-ghost btn-sm ${resource.is_active ? 'text-green-600' : 'text-gray-400'}`}
+                                            onClick={() => toggleStatusMutation.mutate({
+                                                id: resource.id,
+                                                isActive: !resource.is_active,
+                                            })}
+                                            title={resource.is_active ? 'Active - Click to deactivate' : 'Inactive - Click to activate'}
+                                        >
+                                            <Power size={18} />
+                                        </button>
+                                    </td>
                                     <td>
                                         <div className="flex gap-2">
                                             <button
@@ -302,6 +327,16 @@ export function ResourcesPage() {
                                         rows={3}
                                         {...register('description')}
                                     />
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            {...register('is_active')}
+                                        />
+                                        <span className="form-label" style={{ marginBottom: 0 }}>Active</span>
+                                    </label>
                                 </div>
                             </div>
                             <div className="modal-footer">

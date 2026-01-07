@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Boxes, Upload, Trash2, X, Check, FileUp, Package } from 'lucide-react';
+import { Boxes, Upload, Trash2, X, Check, FileUp, Package, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { inventoriesApi, resourcesApi, shopsApi } from '../../api';
 import type { Inventory, Shop, Resource } from '../../types';
@@ -11,9 +11,12 @@ export function InventoriesPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [selectedShopId, setSelectedShopId] = useState<string>('');
     const [selectedResourceId, setSelectedResourceId] = useState<string>('');
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [filterSold, setFilterSold] = useState<string>('all'); // 'all', 'sold', 'available'
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [uploadFile, setUploadFile] = useState<File | null>(null);
     const [deletingInventory, setDeletingInventory] = useState<Inventory | null>(null);
+    const [selectedInventories, setSelectedInventories] = useState<Set<string>>(new Set());
 
     const { data: shopsData } = useQuery({
         queryKey: ['shops'],
@@ -27,8 +30,11 @@ export function InventoriesPage() {
     });
 
     const { data: inventoriesData, isLoading } = useQuery({
-        queryKey: ['inventories', selectedResourceId],
-        queryFn: () => inventoriesApi.list(selectedResourceId),
+        queryKey: ['inventories', selectedResourceId, searchQuery, filterSold],
+        queryFn: () => {
+            const isSold = filterSold === 'all' ? undefined : filterSold === 'sold';
+            return inventoriesApi.list(selectedResourceId, 1, 100, searchQuery, isSold);
+        },
         enabled: !!selectedResourceId,
     });
 
@@ -64,6 +70,16 @@ export function InventoriesPage() {
         onError: () => toast.error('Failed to update'),
     });
 
+    const bulkDeleteMutation = useMutation({
+        mutationFn: (ids: string[]) => inventoriesApi.bulkDelete(ids),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['inventories'] });
+            toast.success(`Deleted ${selectedInventories.size} items!`);
+            setSelectedInventories(new Set());
+        },
+        onError: () => toast.error('Failed to bulk delete'),
+    });
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) setUploadFile(file);
@@ -81,6 +97,30 @@ export function InventoriesPage() {
         if (file) setUploadFile(file);
     };
 
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedInventories(new Set(inventories.map(i => i.id)));
+        } else {
+            setSelectedInventories(new Set());
+        }
+    };
+
+    const handleSelectOne = (id: string, checked: boolean) => {
+        const newSelected = new Set(selectedInventories);
+        if (checked) {
+            newSelected.add(id);
+        } else {
+            newSelected.delete(id);
+        }
+        setSelectedInventories(newSelected);
+    };
+
+    const handleBulkDelete = () => {
+        if (selectedInventories.size > 0) {
+            bulkDeleteMutation.mutate(Array.from(selectedInventories));
+        }
+    };
+
     const shops: Shop[] = shopsData?.items || [];
     const resources: Resource[] = resourcesData?.items || [];
     const inventories: Inventory[] = inventoriesData?.items || [];
@@ -94,14 +134,26 @@ export function InventoriesPage() {
                     <h1 className="page-title">Inventories</h1>
                     <p className="page-subtitle">Manage your inventory items</p>
                 </div>
-                <button
-                    className="btn btn-primary"
-                    onClick={() => setIsUploadModalOpen(true)}
-                    disabled={!selectedResourceId}
-                >
-                    <Upload size={18} />
-                    Bulk Upload
-                </button>
+                <div className="flex gap-2">
+                    {selectedInventories.size > 0 && (
+                        <button
+                            className="btn btn-danger"
+                            onClick={handleBulkDelete}
+                            disabled={bulkDeleteMutation.isPending}
+                        >
+                            <Trash2 size={18} />
+                            Delete Selected ({selectedInventories.size})
+                        </button>
+                    )}
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => setIsUploadModalOpen(true)}
+                        disabled={!selectedResourceId}
+                    >
+                        <Upload size={18} />
+                        Bulk Upload
+                    </button>
+                </div>
             </div>
 
             <div className="filter-bar card">
@@ -114,6 +166,8 @@ export function InventoriesPage() {
                             onChange={(e) => {
                                 setSelectedShopId(e.target.value);
                                 setSelectedResourceId('');
+                                setSearchQuery('');
+                                setFilterSold('all');
                             }}
                         >
                             <option value="">-- Select shop --</option>
@@ -135,6 +189,36 @@ export function InventoriesPage() {
                             {resources.map((resource) => (
                                 <option key={resource.id} value={resource.id}>{resource.name}</option>
                             ))}
+                        </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 0, flex: 1 }}>
+                        <label className="form-label">Search</label>
+                        <div style={{ position: 'relative' }}>
+                            <Search size={18} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+                            <input
+                                type="text"
+                                className="form-input"
+                                placeholder="Search by content..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                disabled={!selectedResourceId}
+                                style={{ paddingLeft: 40 }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Status</label>
+                        <select
+                            className="form-input"
+                            value={filterSold}
+                            onChange={(e) => setFilterSold(e.target.value)}
+                            disabled={!selectedResourceId}
+                        >
+                            <option value="all">All</option>
+                            <option value="available">Available</option>
+                            <option value="sold">Sold</option>
                         </select>
                     </div>
                 </div>
@@ -185,6 +269,13 @@ export function InventoriesPage() {
                     <table className="table">
                         <thead>
                             <tr>
+                                <th style={{ width: 50 }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedInventories.size === inventories.length && inventories.length > 0}
+                                        onChange={(e) => handleSelectAll(e.target.checked)}
+                                    />
+                                </th>
                                 <th>Content</th>
                                 <th style={{ width: 120 }}>Status</th>
                                 <th style={{ width: 80 }}>Actions</th>
@@ -193,6 +284,13 @@ export function InventoriesPage() {
                         <tbody>
                             {inventories.map((item) => (
                                 <tr key={item.id} className={item.is_sold ? 'sold' : ''}>
+                                    <td>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedInventories.has(item.id)}
+                                            onChange={(e) => handleSelectOne(item.id, e.target.checked)}
+                                        />
+                                    </td>
                                     <td>
                                         <code className="inventory-content">{item.content}</code>
                                     </td>

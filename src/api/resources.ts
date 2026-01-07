@@ -34,6 +34,13 @@ export const resourcesApi = {
         const response = await apiClient.delete(`/api/v1/resources/resources/${resourceId}`);
         return response.data;
     },
+
+    updateStatus: async (resourceId: string, isActive: boolean): Promise<ResponseSchema<Resource>> => {
+        const response = await apiClient.put(`/api/v1/resources/resources/update-status/${resourceId}`, null, {
+            params: { is_active: isActive },
+        });
+        return response.data;
+    },
 };
 
 export default resourcesApi;

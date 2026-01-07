@@ -9,9 +9,15 @@ import type {
 } from '../types';
 
 export const inventoriesApi = {
-    list: async (resourceId?: string, page = 1, size = 100): Promise<PaginatedResponse<Inventory>> => {
+    list: async (resourceId?: string, page = 1, size = 100, query?: string, isSold?: boolean): Promise<PaginatedResponse<Inventory>> => {
         const response = await apiClient.get('/api/v1/inventories/inventories/', {
-            params: { resource_id: resourceId, page, size },
+            params: { 
+                resource_id: resourceId, 
+                page, 
+                size,
+                query,
+                is_sold: isSold,
+            },
         });
         return response.data;
     },
@@ -44,6 +50,11 @@ export const inventoriesApi = {
             params: { resource_id: resourceId },
             headers: { 'Content-Type': 'multipart/form-data' },
         });
+        return response.data;
+    },
+
+    bulkDelete: async (inventoryIds: string[]): Promise<ResponseSchema<string[]>> => {
+        const response = await apiClient.post('/api/v1/inventories/inventories/bulk-delete', inventoryIds);
         return response.data;
     },
 };

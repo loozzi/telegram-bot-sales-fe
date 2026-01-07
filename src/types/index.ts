@@ -91,6 +91,7 @@ export interface Resource {
   resource_type: string;
   description?: string | null;
   price: number;
+  is_active: boolean;
 }
 
 export interface ResourceCreate {
@@ -99,6 +100,7 @@ export interface ResourceCreate {
   resource_type: string;
   description?: string | null;
   price: number;
+  is_active: boolean;
 }
 
 export interface ResourceUpdate {
@@ -106,6 +108,7 @@ export interface ResourceUpdate {
   resource_type?: string | null;
   description?: string | null;
   price?: number | null;
+  is_active?: boolean | null;
 }
 
 // ============ Inventory Types ============
