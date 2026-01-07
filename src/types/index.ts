@@ -48,7 +48,7 @@ export interface PaginatedResponse<T> {
 }
 
 // ============ Shop Types ============
-export type ShopStatus = 'active' | 'inactive' | 'suspended';
+export type ShopStatus = "active" | "inactive" | "suspended";
 
 export interface Shop {
   id: string;
@@ -136,9 +136,22 @@ export interface BulkUploadResponse {
 }
 
 // ============ Bank Types ============
-export type BankType = 'tpb' | 'vcb' | 'acb' | 'mb' | 'bidv' | 'vtb' | 'seabank' | 'viettel' | 'tsr' | 'msb' | 'tcb' | 'timo' | 'vab';
-export type BankTransactionStatus = 'pending' | 'completed' | 'failed';
-export type TransactionDirection = 'in' | 'out';
+export type BankType =
+  | "tpb"
+  | "vcb"
+  | "acb"
+  | "mb"
+  | "bidv"
+  | "vtb"
+  | "seabank"
+  | "viettel"
+  | "tsr"
+  | "msb"
+  | "tcb"
+  | "timo"
+  | "vab";
+export type BankTransactionStatus = "pending" | "completed" | "failed";
+export type TransactionDirection = "in" | "out";
 
 export interface BankTransaction {
   id: string;
@@ -186,7 +199,7 @@ export interface BotListResponse {
 }
 
 // ============ Payment Types ============
-export type PaymentStatus = 'pending' | 'working' | 'invalid' | 'suspended';
+export type PaymentStatus = "pending" | "working" | "invalid" | "suspended";
 
 export interface Payment {
   id: string;
