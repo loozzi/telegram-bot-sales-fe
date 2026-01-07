@@ -69,7 +69,7 @@ export function RegisterPage() {
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
       toast.error(
-        err.response?.data?.error || "Registration failed. Please try again."
+        err.response?.data?.error || "Đăng ký thất bại. Vui lòng thử lại."
       );
     } finally {
       setIsLoading(false);
@@ -104,11 +104,11 @@ export function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Username</label>
+            <label className="form-label">Tên đăng nhập</label>
             <input
               type="text"
               className={`form-input ${errors.username ? "error" : ""}`}
-              placeholder="Choose a username"
+              placeholder="Chọn tên đăng nhập"
               {...register("username")}
             />
             {errors.username && (
@@ -117,12 +117,12 @@ export function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label className="form-label">Mật khẩu</label>
             <div className="password-input-wrapper">
               <input
                 type={showPassword ? "text" : "password"}
                 className={`form-input ${errors.password ? "error" : ""}`}
-                placeholder="Create a password"
+                placeholder="Tạo mật khẩu"
                 {...register("password")}
               />
               <button
@@ -139,11 +139,11 @@ export function RegisterPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Confirm Password</label>
+            <label className="form-label">Xác nhận mật khẩu</label>
             <input
               type="password"
               className={`form-input ${errors.confirmPassword ? "error" : ""}`}
-              placeholder="Confirm your password"
+              placeholder="Xác nhận mật khẩu của bạn"
               {...register("confirmPassword")}
             />
             {errors.confirmPassword && (
@@ -163,7 +163,7 @@ export function RegisterPage() {
             ) : (
               <>
                 <UserPlus size={18} />
-                Create Account
+                Tạo tài khoản
               </>
             )}
           </button>
@@ -171,7 +171,7 @@ export function RegisterPage() {
 
         <div className="auth-footer">
           <p>
-            Already have an account? <Link to="/login">Sign in</Link>
+            Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
           </p>
         </div>
       </div>

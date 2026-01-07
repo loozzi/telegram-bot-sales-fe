@@ -61,10 +61,10 @@ export function InventoriesPage() {
     mutationFn: (id: string) => inventoriesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventories"] });
-      toast.success("Inventory item deleted!");
+      toast.success("Xóa mục kho thành công!");
       setDeletingInventory(null);
     },
-    onError: () => toast.error("Failed to delete"),
+    onError: () => toast.error("Xóa thất bại"),
   });
 
   const uploadMutation = useMutation({
@@ -72,11 +72,11 @@ export function InventoriesPage() {
       inventoriesApi.upload(resourceId, file),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["inventories"] });
-      toast.success(`Uploaded ${response.data?.total_created || 0} items!`);
+      toast.success(`Đã tải lên ${response.data?.total_created || 0} mục!`);
       setIsUploadModalOpen(false);
       setUploadFile(null);
     },
-    onError: () => toast.error("Failed to upload"),
+    onError: () => toast.error("Tải lên thất bại"),
   });
 
   const toggleSoldMutation = useMutation({
@@ -84,19 +84,19 @@ export function InventoriesPage() {
       inventoriesApi.update(id, { is_sold }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventories"] });
-      toast.success("Status updated!");
+      toast.success("Cập nhật trạng thái thành công!");
     },
-    onError: () => toast.error("Failed to update"),
+    onError: () => toast.error("Cập nhật thất bại"),
   });
 
   const bulkDeleteMutation = useMutation({
     mutationFn: (ids: string[]) => inventoriesApi.bulkDelete(ids),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventories"] });
-      toast.success(`Deleted ${selectedInventories.size} items!`);
+      toast.success(`Đã xóa ${selectedInventories.size} mục!`);
       setSelectedInventories(new Set());
     },
-    onError: () => toast.error("Failed to bulk delete"),
+    onError: () => toast.error("Xóa hàng loạt thất bại"),
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,8 +153,8 @@ export function InventoriesPage() {
     <div className="inventories-page animate-fadeIn">
       <div className="page-header flex justify-between items-center">
         <div>
-          <h1 className="page-title">Inventories</h1>
-          <p className="page-subtitle">Manage your inventory items</p>
+          <h1 className="page-title">Kho Hàng</h1>
+          <p className="page-subtitle">Quản lý các mục trong kho</p>
         </div>
         <div className="flex gap-2">
           {selectedInventories.size > 0 && (
@@ -164,7 +164,7 @@ export function InventoriesPage() {
               disabled={bulkDeleteMutation.isPending}
             >
               <Trash2 size={18} />
-              Delete Selected ({selectedInventories.size})
+              Xóa Đã Chọn ({selectedInventories.size})
             </button>
           )}
           <button
@@ -173,7 +173,7 @@ export function InventoriesPage() {
             disabled={!selectedResourceId}
           >
             <Upload size={18} />
-            Bulk Upload
+            Tải Lên Hàng Loạt
           </button>
         </div>
       </div>
@@ -181,7 +181,7 @@ export function InventoriesPage() {
       <div className="filter-bar card">
         <div className="filters-row">
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label">Shop</label>
+            <label className="form-label">Cửa Hàng</label>
             <select
               className="form-input"
               value={selectedShopId}
@@ -192,7 +192,7 @@ export function InventoriesPage() {
                 setFilterSold("all");
               }}
             >
-              <option value="">-- Select shop --</option>
+              <option value="">-- Chọn cửa hàng --</option>
               {shops.map((shop) => (
                 <option key={shop.id} value={shop.id}>
                   {shop.name}
@@ -202,14 +202,14 @@ export function InventoriesPage() {
           </div>
 
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label">Resource</label>
+            <label className="form-label">Tài Nguyên</label>
             <select
               className="form-input"
               value={selectedResourceId}
               onChange={(e) => setSelectedResourceId(e.target.value)}
               disabled={!selectedShopId}
             >
-              <option value="">-- Select resource --</option>
+              <option value="">-- Chọn tài nguyên --</option>
               {resources.map((resource) => (
                 <option key={resource.id} value={resource.id}>
                   {resource.name}
@@ -219,7 +219,7 @@ export function InventoriesPage() {
           </div>
 
           <div className="form-group" style={{ marginBottom: 0, flex: 1 }}>
-            <label className="form-label">Search</label>
+            <label className="form-label">Tìm Kiếm</label>
             <div style={{ position: "relative" }}>
               <Search
                 size={18}
@@ -234,7 +234,7 @@ export function InventoriesPage() {
               <input
                 type="text"
                 className="form-input"
-                placeholder="Search by content..."
+                placeholder="Tìm theo nội dung..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 disabled={!selectedResourceId}
@@ -244,16 +244,16 @@ export function InventoriesPage() {
           </div>
 
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label className="form-label">Status</label>
+            <label className="form-label">Trạng Thái</label>
             <select
               className="form-input"
               value={filterSold}
               onChange={(e) => setFilterSold(e.target.value)}
               disabled={!selectedResourceId}
             >
-              <option value="all">All</option>
-              <option value="available">Available</option>
-              <option value="sold">Sold</option>
+              <option value="all">Tất cả</option>
+              <option value="available">Có sẵn</option>
+              <option value="sold">Đã bán</option>
             </select>
           </div>
         </div>
@@ -263,11 +263,11 @@ export function InventoriesPage() {
         <div className="inventory-stats">
           <div className="stat-badge available">
             <Boxes size={16} />
-            <span>Available: {availableCount}</span>
+            <span>Có sẵn: {availableCount}</span>
           </div>
           <div className="stat-badge sold">
             <Check size={16} />
-            <span>Sold: {soldCount}</span>
+            <span>Đã bán: {soldCount}</span>
           </div>
         </div>
       )}
@@ -275,9 +275,9 @@ export function InventoriesPage() {
       {!selectedResourceId ? (
         <div className="empty-state card">
           <Package size={64} className="empty-state-icon" />
-          <h3 className="empty-state-title">Select a resource</h3>
+          <h3 className="empty-state-title">Chọn tài nguyên</h3>
           <p className="empty-state-text">
-            Choose a shop and resource to view inventory items.
+            Chọn cửa hàng và tài nguyên để xem các mục kho.
           </p>
         </div>
       ) : isLoading ? (
@@ -287,16 +287,16 @@ export function InventoriesPage() {
       ) : inventories.length === 0 ? (
         <div className="empty-state card">
           <Boxes size={64} className="empty-state-icon" />
-          <h3 className="empty-state-title">No inventory items</h3>
+          <h3 className="empty-state-title">Không có mục kho</h3>
           <p className="empty-state-text">
-            Upload a file to add inventory items in bulk.
+            Tải lên tệp để thêm mục kho hàng loạt.
           </p>
           <button
             className="btn btn-primary mt-4"
             onClick={() => setIsUploadModalOpen(true)}
           >
             <Upload size={18} />
-            Upload File
+            Tải Lên Tệp
           </button>
         </div>
       ) : (
@@ -314,9 +314,9 @@ export function InventoriesPage() {
                     onChange={(e) => handleSelectAll(e.target.checked)}
                   />
                 </th>
-                <th>Content</th>
-                <th style={{ width: 120 }}>Status</th>
-                <th style={{ width: 80 }}>Actions</th>
+                <th>Nội dung</th>
+                <th style={{ width: 120 }}>Trạng Thái</th>
+                <th style={{ width: 80 }}>Hành Động</th>
               </tr>
             </thead>
             <tbody>
@@ -346,7 +346,7 @@ export function InventoriesPage() {
                         })
                       }
                     >
-                      {item.is_sold ? "Sold" : "Available"}
+                      {item.is_sold ? "Đã bán" : "Có sẵn"}
                     </button>
                   </td>
                   <td>
@@ -372,7 +372,7 @@ export function InventoriesPage() {
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Bulk Upload</h2>
+              <h2 className="modal-title">Tải Lên Hàng Loạt</h2>
               <button
                 className="modal-close"
                 onClick={() => setIsUploadModalOpen(false)}
@@ -391,9 +391,9 @@ export function InventoriesPage() {
                 <p className="upload-text">
                   {uploadFile
                     ? uploadFile.name
-                    : "Drop file here or click to browse"}
+                    : "Thả tệp vào đây hoặc click để chọn"}
                 </p>
-                <p className="upload-hint">Text file with one item per line</p>
+                <p className="upload-hint">Tệp văn bản với mỗi mục trên một dòng</p>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -408,7 +408,7 @@ export function InventoriesPage() {
                 className="btn btn-secondary"
                 onClick={() => setIsUploadModalOpen(false)}
               >
-                Cancel
+                Hủy
               </button>
               <button
                 className="btn btn-primary"
@@ -420,7 +420,7 @@ export function InventoriesPage() {
                 ) : (
                   <>
                     <Upload size={18} />
-                    Upload
+                    Tải Lên
                   </>
                 )}
               </button>
@@ -437,7 +437,7 @@ export function InventoriesPage() {
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Delete Item</h2>
+              <h2 className="modal-title">Xóa Mục</h2>
               <button
                 className="modal-close"
                 onClick={() => setDeletingInventory(null)}
@@ -446,7 +446,7 @@ export function InventoriesPage() {
               </button>
             </div>
             <div className="modal-body">
-              <p>Delete this inventory item?</p>
+              <p>Xóa mục kho này?</p>
               <code className="delete-preview">
                 {deletingInventory.content}
               </code>
@@ -456,7 +456,7 @@ export function InventoriesPage() {
                 className="btn btn-secondary"
                 onClick={() => setDeletingInventory(null)}
               >
-                Cancel
+                Hủy
               </button>
               <button
                 className="btn btn-danger"
@@ -468,7 +468,7 @@ export function InventoriesPage() {
                 ) : (
                   <>
                     <Trash2 size={18} />
-                    Delete
+                    Xóa
                   </>
                 )}
               </button>

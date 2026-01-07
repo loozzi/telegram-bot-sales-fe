@@ -10,11 +10,11 @@ import type { Resource, ResourceCreate, Shop } from "../../types";
 import "./Resources.css";
 
 const resourceSchema = z.object({
-  shop_id: z.string().min(1, "Shop is required"),
-  name: z.string().min(1, "Name is required").max(100),
-  resource_type: z.string().min(1, "Type is required").max(50),
+  shop_id: z.string().min(1, "Cửa hàng là bắt buộc"),
+  name: z.string().min(1, "Tên là bắt buộc").max(100),
+  resource_type: z.string().min(1, "Loại là bắt buộc").max(50),
   description: z.string().max(500).optional(),
-  price: z.number().min(0, "Price must be positive"),
+  price: z.number().min(0, "Giá phải là số dương"),
   is_active: z.boolean(),
 });
 
@@ -44,10 +44,10 @@ export function ResourcesPage() {
     mutationFn: (data: ResourceCreate) => resourcesApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resources"] });
-      toast.success("Resource created!");
+      toast.success("Tạo tài nguyên thành công!");
       closeModal();
     },
-    onError: () => toast.error("Failed to create resource"),
+    onError: () => toast.error("Tạo tài nguyên thất bại"),
   });
 
   const updateMutation = useMutation({
@@ -55,20 +55,20 @@ export function ResourcesPage() {
       resourcesApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resources"] });
-      toast.success("Resource updated!");
+      toast.success("Cập nhật tài nguyên thành công!");
       closeModal();
     },
-    onError: () => toast.error("Failed to update resource"),
+    onError: () => toast.error("Cập nhật tài nguyên thất bại"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => resourcesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resources"] });
-      toast.success("Resource deleted!");
+      toast.success("Xóa tài nguyên thành công!");
       setDeletingResource(null);
     },
-    onError: () => toast.error("Failed to delete resource"),
+    onError: () => toast.error("Xóa tài nguyên thất bại"),
   });
 
   const toggleStatusMutation = useMutation({
@@ -76,9 +76,9 @@ export function ResourcesPage() {
       resourcesApi.updateStatus(id, isActive),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resources"] });
-      toast.success("Status updated!");
+      toast.success("Cập nhật trạng thái thành công!");
     },
-    onError: () => toast.error("Failed to update status"),
+    onError: () => toast.error("Cập nhật trạng thái thất bại"),
   });
 
   const {
@@ -143,9 +143,9 @@ export function ResourcesPage() {
     <div className="resources-page animate-fadeIn">
       <div className="page-header flex justify-between items-center">
         <div>
-          <h1 className="page-title">Resources</h1>
+          <h1 className="page-title">Tài Nguyên</h1>
           <p className="page-subtitle">
-            Manage your shop resources and products
+            Quản lý tài nguyên và sản phẩm của cửa hàng
           </p>
         </div>
         <button
@@ -154,19 +154,19 @@ export function ResourcesPage() {
           disabled={!selectedShopId}
         >
           <Plus size={18} />
-          New Resource
+          Tài Nguyên Mới
         </button>
       </div>
 
       <div className="filter-bar card">
         <div className="form-group" style={{ marginBottom: 0 }}>
-          <label className="form-label">Select Shop</label>
+          <label className="form-label">Chọn Cửa Hàng</label>
           <select
             className="form-input"
             value={selectedShopId}
             onChange={(e) => setSelectedShopId(e.target.value)}
           >
-            <option value="">-- Choose a shop --</option>
+            <option value="">-- Chọn cửa hàng --</option>
             {shops.map((shop) => (
               <option key={shop.id} value={shop.id}>
                 {shop.name}
@@ -179,9 +179,9 @@ export function ResourcesPage() {
       {!selectedShopId ? (
         <div className="empty-state card">
           <Package size={64} className="empty-state-icon" />
-          <h3 className="empty-state-title">Select a shop</h3>
+          <h3 className="empty-state-title">Chọn một cửa hàng</h3>
           <p className="empty-state-text">
-            Please select a shop above to view and manage its resources.
+            Vui lòng chọn cửa hàng ở trên để xem và quản lý tài nguyên.
           </p>
         </div>
       ) : isLoading ? (
@@ -191,13 +191,13 @@ export function ResourcesPage() {
       ) : resourcesData?.items?.length === 0 ? (
         <div className="empty-state card">
           <Package size={64} className="empty-state-icon" />
-          <h3 className="empty-state-title">No resources yet</h3>
+          <h3 className="empty-state-title">Chưa có tài nguyên</h3>
           <p className="empty-state-text">
-            Create your first resource to start managing inventory.
+            Tạo tài nguyên đầu tiên để bắt đầu quản lý kho.
           </p>
           <button className="btn btn-primary mt-4" onClick={openCreateModal}>
             <Plus size={18} />
-            Create Resource
+            Tạo Tài Nguyên
           </button>
         </div>
       ) : (
@@ -205,12 +205,12 @@ export function ResourcesPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Description</th>
-                <th>Price</th>
-                <th style={{ width: 100 }}>Status</th>
-                <th style={{ width: 120 }}>Actions</th>
+                <th>Tên</th>
+                <th>Loại</th>
+                <th>Mô Tả</th>
+                <th>Giá</th>
+                <th style={{ width: 100 }}>Trạng Thái</th>
+                <th style={{ width: 120 }}>Hành Động</th>
               </tr>
             </thead>
             <tbody>
@@ -236,9 +236,17 @@ export function ResourcesPage() {
                   </td>
                   <td>
                     <button
-                      className={`btn btn-ghost btn-sm ${
-                        resource.is_active ? "text-green-600" : "text-gray-400"
+                      className={`btn btn-sm ${
+                        resource.is_active 
+                          ? "bg-green-100 text-green-700 hover:bg-green-200" 
+                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                       }`}
+                      style={{
+                        backgroundColor: resource.is_active ? '#dcfce7' : '#f3f4f6',
+                        color: resource.is_active ? '#15803d' : '#6b7280',
+                        border: resource.is_active ? '1px solid #86efac' : '1px solid #d1d5db',
+                        transition: 'all 0.2s ease'
+                      }}
                       onClick={() =>
                         toggleStatusMutation.mutate({
                           id: resource.id,
@@ -247,8 +255,8 @@ export function ResourcesPage() {
                       }
                       title={
                         resource.is_active
-                          ? "Active - Click to deactivate"
-                          : "Inactive - Click to activate"
+                          ? "Hoạt động - Click để tắt"
+                          : "Không hoạt động - Click để bật"
                       }
                     >
                       <Power size={18} />
@@ -283,7 +291,7 @@ export function ResourcesPage() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">
-                {editingResource ? "Edit Resource" : "Create Resource"}
+                {editingResource ? "Sửa Tài Nguyên" : "Tạo Tài Nguyên"}
               </h2>
               <button className="modal-close" onClick={closeModal}>
                 <X size={20} />
@@ -292,12 +300,12 @@ export function ResourcesPage() {
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="modal-body">
                 <div className="form-group">
-                  <label className="form-label">Shop</label>
+                  <label className="form-label">Cửa Hàng</label>
                   <select
                     className={`form-input ${errors.shop_id ? "error" : ""}`}
                     {...register("shop_id")}
                   >
-                    <option value="">Select shop</option>
+                    <option value="">Chọn cửa hàng</option>
                     {shops.map((shop) => (
                       <option key={shop.id} value={shop.id}>
                         {shop.name}
@@ -310,11 +318,11 @@ export function ResourcesPage() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Name</label>
+                  <label className="form-label">Tên</label>
                   <input
                     type="text"
                     className={`form-input ${errors.name ? "error" : ""}`}
-                    placeholder="Resource name"
+                    placeholder="Tên tài nguyên"
                     {...register("name")}
                   />
                   {errors.name && (
@@ -323,13 +331,13 @@ export function ResourcesPage() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Type</label>
+                  <label className="form-label">Loại</label>
                   <input
                     type="text"
                     className={`form-input ${
                       errors.resource_type ? "error" : ""
                     }`}
-                    placeholder="e.g., account, key, license"
+                    placeholder="Ví dụ: tài khoản, key, license"
                     {...register("resource_type")}
                   />
                   {errors.resource_type && (
@@ -340,7 +348,7 @@ export function ResourcesPage() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Price (VND)</label>
+                  <label className="form-label">Giá (VND)</label>
                   <input
                     type="number"
                     className={`form-input ${errors.price ? "error" : ""}`}
@@ -353,10 +361,10 @@ export function ResourcesPage() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Description</label>
+                  <label className="form-label">Mô Tả</label>
                   <textarea
                     className="form-input"
-                    placeholder="Optional description"
+                    placeholder="Mô tả tùy chọn"
                     rows={3}
                     {...register("description")}
                   />
@@ -366,7 +374,7 @@ export function ResourcesPage() {
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" {...register("is_active")} />
                     <span className="form-label" style={{ marginBottom: 0 }}>
-                      Active
+                      Hoạt động
                     </span>
                   </label>
                 </div>
@@ -377,7 +385,7 @@ export function ResourcesPage() {
                   className="btn btn-secondary"
                   onClick={closeModal}
                 >
-                  Cancel
+                  Hủy
                 </button>
                 <button
                   type="submit"
@@ -394,7 +402,7 @@ export function ResourcesPage() {
                   ) : (
                     <>
                       <Check size={18} />
-                      {editingResource ? "Update" : "Create"}
+                      {editingResource ? "Cập Nhật" : "Tạo"}
                     </>
                   )}
                 </button>
@@ -412,7 +420,7 @@ export function ResourcesPage() {
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Delete Resource</h2>
+              <h2 className="modal-title">Xóa Tài Nguyên</h2>
               <button
                 className="modal-close"
                 onClick={() => setDeletingResource(null)}
@@ -422,7 +430,7 @@ export function ResourcesPage() {
             </div>
             <div className="modal-body">
               <p>
-                Are you sure you want to delete{" "}
+                Bạn có chắc chắn muốn xóa{" "}
                 <strong>{deletingResource.name}</strong>?
               </p>
             </div>
@@ -431,7 +439,7 @@ export function ResourcesPage() {
                 className="btn btn-secondary"
                 onClick={() => setDeletingResource(null)}
               >
-                Cancel
+                Hủy
               </button>
               <button
                 className="btn btn-danger"
@@ -443,7 +451,7 @@ export function ResourcesPage() {
                 ) : (
                   <>
                     <Trash2 size={18} />
-                    Delete
+                    Xóa
                   </>
                 )}
               </button>

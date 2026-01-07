@@ -57,7 +57,7 @@ export function LoginPage() {
     } catch (error: unknown) {
       const err = error as { response?: { data?: { error?: string } } };
       toast.error(
-        err.response?.data?.error || "Login failed. Please try again."
+        err.response?.data?.error || "Đăng nhập thất bại. Vui lòng thử lại."
       );
     } finally {
       setIsLoading(false);
@@ -92,12 +92,12 @@ export function LoginPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label className="form-label">Mật khẩu</label>
             <div className="password-input-wrapper">
               <input
                 type={showPassword ? "text" : "password"}
                 className={`form-input ${errors.password ? "error" : ""}`}
-                placeholder="Enter your password"
+                placeholder="Nhập mật khẩu của bạn"
                 {...register("password")}
               />
               <button
@@ -123,7 +123,7 @@ export function LoginPage() {
             ) : (
               <>
                 <LogIn size={18} />
-                Sign In
+                Đăng nhập
               </>
             )}
           </button>
@@ -131,7 +131,7 @@ export function LoginPage() {
 
         <div className="auth-footer">
           <p>
-            Don't have an account? <Link to="/register">Create one</Link>
+            Chưa có tài khoản? <Link to="/register">Tạo tài khoản</Link>
           </p>
         </div>
       </div>

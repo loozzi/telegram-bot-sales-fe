@@ -10,12 +10,12 @@ import type { Shop, ShopCreate } from '../../types';
 import './Shops.css';
 
 const shopSchema = z.object({
-    name: z.string().min(1, 'Name is required').max(100),
+    name: z.string().min(1, 'Tên là bắt buộc').max(100),
     description: z.string().max(500).optional(),
     support_channel: z.string().max(200).optional(),
     support_group: z.string().max(200).optional(),
     policy: z.string().max(5000).optional(),
-    bot_token: z.string().min(1, 'Bot token is required').max(200),
+    bot_token: z.string().min(1, 'Bot token là bắt buộc').max(200),
 });
 
 type ShopForm = z.infer<typeof shopSchema>;
@@ -35,10 +35,10 @@ export function ShopsPage() {
         mutationFn: (data: ShopCreate) => shopsApi.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['shops'] });
-            toast.success('Shop created successfully!');
+            toast.success('Tạo cửa hàng thành công!');
             closeModal();
         },
-        onError: () => toast.error('Failed to create shop'),
+        onError: () => toast.error('Tạo cửa hàng thất bại'),
     });
 
     const updateMutation = useMutation({
@@ -46,32 +46,32 @@ export function ShopsPage() {
             shopsApi.update(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['shops'] });
-            toast.success('Shop updated successfully!');
+            toast.success('Cập nhật cửa hàng thành công!');
             closeModal();
         },
-        onError: () => toast.error('Failed to update shop'),
+        onError: () => toast.error('Cập nhật cửa hàng thất bại'),
     });
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => shopsApi.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['shops'] });
-            toast.success('Shop deleted successfully!');
+            toast.success('Xóa cửa hàng thành công!');
             setDeletingShop(null);
         },
-        onError: () => toast.error('Failed to delete shop'),
+        onError: () => toast.error('Xóa cửa hàng thất bại'),
     });
 
     const startBotMutation = useMutation({
         mutationFn: (shopId: string) => botApi.startMyBot(shopId),
-        onSuccess: () => toast.success('Bot started!'),
-        onError: () => toast.error('Failed to start bot'),
+        onSuccess: () => toast.success('Bot đã khởi động!'),
+        onError: () => toast.error('Khởi động bot thất bại'),
     });
 
     const stopBotMutation = useMutation({
         mutationFn: (shopId: string) => botApi.stopMyBot(shopId),
-        onSuccess: () => toast.success('Bot stopped!'),
-        onError: () => toast.error('Failed to stop bot'),
+        onSuccess: () => toast.success('Bot đã dừng!'),
+        onError: () => toast.error('Dừng bot thất bại'),
     });
 
     const {
@@ -110,10 +110,10 @@ export function ShopsPage() {
     };
 
     const getStatusBadge = (status: string, isActive: boolean) => {
-        if (!isActive) return <span className="badge badge-error">Inactive</span>;
+        if (!isActive) return <span className="badge badge-error">Không hoạt động</span>;
         switch (status) {
-            case 'active': return <span className="badge badge-success">Active</span>;
-            case 'suspended': return <span className="badge badge-warning">Suspended</span>;
+            case 'active': return <span className="badge badge-success">Hoạt động</span>;
+            case 'suspended': return <span className="badge badge-warning">Tạm ngưng</span>;
             default: return <span className="badge badge-info">{status}</span>;
         }
     };
@@ -122,12 +122,12 @@ export function ShopsPage() {
         <div className="shops-page animate-fadeIn">
             <div className="page-header flex justify-between items-center">
                 <div>
-                    <h1 className="page-title">Shops</h1>
-                    <p className="page-subtitle">Manage your Telegram bot shops</p>
+                    <h1 className="page-title">Cửa Hàng</h1>
+                    <p className="page-subtitle">Quản lý các cửa hàng bot Telegram của bạn</p>
                 </div>
                 <button className="btn btn-primary" onClick={openCreateModal}>
                     <Plus size={18} />
-                    New Shop
+                    Cửa Hàng Mới
                 </button>
             </div>
 
@@ -138,13 +138,13 @@ export function ShopsPage() {
             ) : data?.items?.length === 0 ? (
                 <div className="empty-state card">
                     <Store size={64} className="empty-state-icon" />
-                    <h3 className="empty-state-title">No shops yet</h3>
+                    <h3 className="empty-state-title">Chưa có cửa hàng</h3>
                     <p className="empty-state-text">
-                        Create your first shop to start selling with Telegram bots.
+                        Tạo cửa hàng đầu tiên để bắt đầu bán hàng với bot Telegram.
                     </p>
                     <button className="btn btn-primary mt-4" onClick={openCreateModal}>
                         <Plus size={18} />
-                        Create Shop
+                        Tạo Cửa Hàng
                     </button>
                 </div>
             ) : (
@@ -175,19 +175,19 @@ export function ShopsPage() {
                                 </div>
                                 {shop.support_channel && (
                                     <div className="shop-support-channel">
-                                        <span className="meta-label">Channel:</span>
+                                        <span className="meta-label">Kênh:</span>
                                         <span className="meta-value">{shop.support_channel}</span>
                                     </div>
                                 )}
                                 {shop.support_group && (
                                     <div className="shop-support-group">
-                                        <span className="meta-label">Group:</span>
+                                        <span className="meta-label">Nhóm:</span>
                                         <span className="meta-value">{shop.support_group}</span>
                                     </div>
                                 )}
                                 {shop.policy && (
                                     <div className="shop-policy">
-                                        <span className="meta-label">Policy:</span>
+                                        <span className="meta-label">Chính sách:</span>
                                         <span className="meta-value">{shop.policy.length > 50 ? shop.policy.substring(0, 50) + '...' : shop.policy}</span>
                                     </div>
                                 )}
@@ -199,7 +199,7 @@ export function ShopsPage() {
                                     onClick={() => shop.is_active ? stopBotMutation.mutate(shop.id) : startBotMutation.mutate(shop.id)}
                                 >
                                     <Bot size={16} />
-                                    {shop.is_active ? 'Stop Bot' : 'Start Bot'}
+                                    {shop.is_active ? 'Dừng Bot' : 'Khởi Động Bot'}
                                 </button>
                                 <button
                                     className="btn btn-ghost btn-sm"
@@ -225,7 +225,7 @@ export function ShopsPage() {
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2 className="modal-title">
-                                {editingShop ? 'Edit Shop' : 'Create New Shop'}
+                                {editingShop ? 'Sửa Cửa Hàng' : 'Tạo Cửa Hàng Mới'}
                             </h2>
                             <button className="modal-close" onClick={closeModal}>
                                 <X size={20} />
@@ -234,11 +234,11 @@ export function ShopsPage() {
                         <form onSubmit={handleSubmit(onSubmit)}>
                             <div className="modal-body">
                                 <div className="form-group">
-                                    <label className="form-label">Shop Name</label>
+                                    <label className="form-label">Tên Cửa Hàng</label>
                                     <input
                                         type="text"
                                         className={`form-input ${errors.name ? 'error' : ''}`}
-                                        placeholder="Enter shop name"
+                                        placeholder="Nhập tên cửa hàng"
                                         {...register('name')}
                                     />
                                     {errors.name && (
@@ -247,21 +247,21 @@ export function ShopsPage() {
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="form-label">Description</label>
+                                    <label className="form-label">Mô Tả</label>
                                     <textarea
                                         className="form-input"
-                                        placeholder="Optional description"
+                                        placeholder="Mô tả tùy chọn"
                                         rows={3}
                                         {...register('description')}
                                     />
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="form-label">Telegram Bot Token</label>
+                                    <label className="form-label">Token Bot Telegram</label>
                                     <input
                                         type="text"
                                         className={`form-input ${errors.bot_token ? 'error' : ''}`}
-                                        placeholder="Enter your bot token from @BotFather"
+                                        placeholder="Nhập token bot từ @BotFather"
                                         {...register('bot_token')}
                                     />
                                     {errors.bot_token && (
@@ -270,7 +270,7 @@ export function ShopsPage() {
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="form-label">Support Channel (Optional)</label>
+                                    <label className="form-label">Kênh Hỗ Trợ (Tùy Chọn)</label>
                                     <input
                                         type="text"
                                         className="form-input"
@@ -280,7 +280,7 @@ export function ShopsPage() {
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="form-label">Support Group (Optional)</label>
+                                    <label className="form-label">Nhóm Hỗ Trợ (Tùy Chọn)</label>
                                     <input
                                         type="text"
                                         className="form-input"
@@ -290,10 +290,10 @@ export function ShopsPage() {
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="form-label">Policy (Optional)</label>
+                                    <label className="form-label">Chính Sách (Tùy Chọn)</label>
                                     <textarea
                                         className="form-input"
-                                        placeholder="Enter shop policy/rules"
+                                        placeholder="Nhập chính sách/quy định của cửa hàng"
                                         rows={4}
                                         {...register('policy')}
                                     />
@@ -301,7 +301,7 @@ export function ShopsPage() {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={closeModal}>
-                                    Cancel
+                                    Hủy
                                 </button>
                                 <button
                                     type="submit"
@@ -313,7 +313,7 @@ export function ShopsPage() {
                                     ) : (
                                         <>
                                             <Check size={18} />
-                                            {editingShop ? 'Update' : 'Create'}
+                                            {editingShop ? 'Cập Nhật' : 'Tạo'}
                                         </>
                                     )}
                                 </button>
@@ -328,15 +328,15 @@ export function ShopsPage() {
                 <div className="modal-overlay" onClick={() => setDeletingShop(null)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2 className="modal-title">Delete Shop</h2>
+                            <h2 className="modal-title">Xóa Cửa Hàng</h2>
                             <button className="modal-close" onClick={() => setDeletingShop(null)}>
                                 <X size={20} />
                             </button>
                         </div>
                         <div className="modal-body">
                             <p>
-                                Are you sure you want to delete <strong>{deletingShop.name}</strong>?
-                                This action cannot be undone.
+                                Bạn có chắc chắn muốn xóa <strong>{deletingShop.name}</strong>?
+                                Hành động này không thể hoàn tác.
                             </p>
                         </div>
                         <div className="modal-footer">
@@ -344,7 +344,7 @@ export function ShopsPage() {
                                 className="btn btn-secondary"
                                 onClick={() => setDeletingShop(null)}
                             >
-                                Cancel
+                                Hủy
                             </button>
                             <button
                                 className="btn btn-danger"
@@ -356,7 +356,7 @@ export function ShopsPage() {
                                 ) : (
                                     <>
                                         <Trash2 size={18} />
-                                        Delete
+                                        Xóa
                                     </>
                                 )}
                             </button>

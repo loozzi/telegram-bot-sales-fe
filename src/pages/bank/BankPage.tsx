@@ -36,9 +36,9 @@ export function BankPage() {
         mutationFn: () => bankApi.syncNow(),
         onSuccess: () => {
             refetch();
-            toast.success('Transactions synced!');
+            toast.success('Giao dịch đã đồng bộ!');
         },
-        onError: () => toast.error('Sync failed'),
+        onError: () => toast.error('Đồng bộ thất bại'),
     });
 
     const formatAmount = (amount: number) => {
@@ -50,9 +50,9 @@ export function BankPage() {
 
     const getStatusBadge = (status: BankTransactionStatus) => {
         switch (status) {
-            case 'completed': return <span className="badge badge-success">Completed</span>;
-            case 'pending': return <span className="badge badge-warning">Pending</span>;
-            case 'failed': return <span className="badge badge-error">Failed</span>;
+            case 'completed': return <span className="badge badge-success">Hoàn thành</span>;
+            case 'pending': return <span className="badge badge-warning">Đang chờ</span>;
+            case 'failed': return <span className="badge badge-error">Thất bại</span>;
             default: return <span className="badge badge-info">{status}</span>;
         }
     };
@@ -102,8 +102,8 @@ export function BankPage() {
         <div className="bank-page animate-fadeIn">
             <div className="page-header flex justify-between items-center">
                 <div>
-                    <h1 className="page-title">Bank Transactions</h1>
-                    <p className="page-subtitle">View and manage bank transactions</p>
+                    <h1 className="page-title">Giao Dịch Ngân Hàng</h1>
+                    <p className="page-subtitle">Xem và quản lý giao dịch ngân hàng</p>
                 </div>
                 <button
                     className="btn btn-primary"
@@ -115,7 +115,7 @@ export function BankPage() {
                     ) : (
                         <>
                             <RefreshCw size={18} />
-                            Sync Now
+                            Đồng Bộ Ngay
                         </>
                     )}
                 </button>
@@ -132,10 +132,10 @@ export function BankPage() {
                             value={statusFilter}
                             onChange={(e) => { setStatusFilter(e.target.value as BankTransactionStatus | ''); setCurrentPage(1); }}
                         >
-                            <option value="">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="completed">Completed</option>
-                            <option value="failed">Failed</option>
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="pending">Đang chờ</option>
+                            <option value="completed">Hoàn thành</option>
+                            <option value="failed">Thất bại</option>
                         </select>
                     </div>
                     <div className="form-group" style={{ marginBottom: 0 }}>
@@ -144,7 +144,7 @@ export function BankPage() {
                             value={bankFilter}
                             onChange={(e) => { setBankFilter(e.target.value as BankType | ''); setCurrentPage(1); }}
                         >
-                            <option value="">All Banks</option>
+                            <option value="">Tất cả ngân hàng</option>
                             <option value="vcb">Vietcombank</option>
                             <option value="tpb">TPBank</option>
                             <option value="mb">MB Bank</option>
@@ -163,9 +163,9 @@ export function BankPage() {
             ) : transactions.length === 0 ? (
                 <div className="empty-state card">
                     <Wallet size={64} className="empty-state-icon" />
-                    <h3 className="empty-state-title">No transactions</h3>
+                    <h3 className="empty-state-title">Không có giao dịch</h3>
                     <p className="empty-state-text">
-                        Transactions will appear here when synced from your banks.
+                        Giao dịch sẽ xuất hiện ở đây khi được đồng bộ từ ngân hàng của bạn.
                     </p>
                 </div>
             ) : (
@@ -175,20 +175,20 @@ export function BankPage() {
                         <thead>
                             <tr>
                                 <th className="sortable" onClick={() => handleSort('direction')}>
-                                    Direction {getSortIcon('direction')}
+                                    Hướng {getSortIcon('direction')}
                                 </th>
                                 <th className="sortable" onClick={() => handleSort('bank_name')}>
-                                    Bank {getSortIcon('bank_name')}
+                                    Ngân Hàng {getSortIcon('bank_name')}
                                 </th>
                                 <th className="sortable" onClick={() => handleSort('amount')}>
-                                    Amount {getSortIcon('amount')}
+                                    Số Tiền {getSortIcon('amount')}
                                 </th>
-                                <th>Description</th>
+                                <th>Mô Tả</th>
                                 <th className="sortable" onClick={() => handleSort('transaction_date')}>
-                                    Date {getSortIcon('transaction_date')}
+                                    Ngày {getSortIcon('transaction_date')}
                                 </th>
                                 <th className="sortable" onClick={() => handleSort('status')}>
-                                    Status {getSortIcon('status')}
+                                    Trạng Thái {getSortIcon('status')}
                                 </th>
                             </tr>
                         </thead>
@@ -198,9 +198,9 @@ export function BankPage() {
                                     <td>
                                         <div className={`direction-badge ${tx.direction}`}>
                                             {tx.direction === 'in' ? (
-                                                <><ArrowDownLeft size={14} /> In</>
+                                                <><ArrowDownLeft size={14} /> Vào</>
                                             ) : (
-                                                <><ArrowUpRight size={14} /> Out</>
+                                                <><ArrowUpRight size={14} /> Ra</>
                                             )}
                                         </div>
                                     </td>
@@ -232,7 +232,7 @@ export function BankPage() {
                     {totalPages > 1 && (
                         <div className="pagination">
                             <div className="pagination-info">
-                                Showing {((currentPage - 1) * PAGE_SIZE) + 1} - {Math.min(currentPage * PAGE_SIZE, totalItems)} of {totalItems}
+                                Hiển thị {((currentPage - 1) * PAGE_SIZE) + 1} - {Math.min(currentPage * PAGE_SIZE, totalItems)} trong tổng {totalItems}
                             </div>
                             <div className="pagination-controls">
                                 <button
@@ -240,7 +240,7 @@ export function BankPage() {
                                     onClick={() => setCurrentPage(1)}
                                     disabled={currentPage === 1}
                                 >
-                                    First
+                                    Đầu
                                 </button>
                                 <button
                                     className="btn btn-ghost btn-sm"
@@ -250,7 +250,7 @@ export function BankPage() {
                                     <ChevronLeft size={16} />
                                 </button>
                                 <span className="pagination-page">
-                                    Page {currentPage} of {totalPages}
+                                    Trang {currentPage} / {totalPages}
                                 </span>
                                 <button
                                     className="btn btn-ghost btn-sm"
@@ -264,7 +264,7 @@ export function BankPage() {
                                     onClick={() => setCurrentPage(totalPages)}
                                     disabled={currentPage === totalPages}
                                 >
-                                    Last
+                                    Cuối
                                 </button>
                             </div>
                         </div>
