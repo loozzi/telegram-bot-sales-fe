@@ -30,7 +30,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 import { botApi, categoriesApi, ordersApi, paymentsApi, resourcesApi, shopsApi } from "../../api";
 import { Breadcrumb } from "../../components/Breadcrumb";
-import type { BankType, Category, CategoryUpdate, Order, Payment, PaymentCreate, PaymentStatus, Resource, ResourceUpdate, Shop, ShopUpdate } from "../../types";
+import type { BankType, Category, CategoryCreate, CategoryUpdate, Order, Payment, PaymentCreate, PaymentStatus, Resource, ResourceCreate, ResourceUpdate, Shop, ShopUpdate } from "../../types";
 import "./ShopDetail.css";
 
 type TabType = "overview" | "categories" | "resources" | "settings" | "orders";
@@ -93,6 +93,8 @@ export function ShopDetailPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [isEditShopModalOpen, setIsEditShopModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
   
@@ -167,6 +169,17 @@ export function ShopDetailPage() {
     onError: () => toast.error("Cập nhật shop thất bại"),
   });
 
+  const createCategoryMutation = useMutation({
+    mutationFn: (data: CategoryCreate) => categoriesApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories", shopId] });
+      toast.success("Tạo danh mục thành công!");
+      setIsCategoryModalOpen(false);
+      categoryForm.reset();
+    },
+    onError: () => toast.error("Tạo danh mục thất bại"),
+  });
+
   const updateCategoryMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: CategoryUpdate }) =>
       categoriesApi.update(id, data),
@@ -174,8 +187,20 @@ export function ShopDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["categories", shopId] });
       toast.success("Cập nhật danh mục thành công!");
       setEditingCategory(null);
+      setIsCategoryModalOpen(false);
     },
     onError: () => toast.error("Cập nhật danh mục thất bại"),
+  });
+
+  const createResourceMutation = useMutation({
+    mutationFn: (data: ResourceCreate) => resourcesApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["resources", shopId] });
+      toast.success("Tạo tài nguyên thành công!");
+      setIsResourceModalOpen(false);
+      resourceForm.reset();
+    },
+    onError: () => toast.error("Tạo tài nguyên thất bại"),
   });
 
   const updateResourceMutation = useMutation({
@@ -190,6 +215,7 @@ export function ShopDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["resources", shopId] });
       toast.success("Cập nhật tài nguyên thành công!");
       setEditingResource(null);
+      setIsResourceModalOpen(false);
     },
     onError: () => toast.error("Cập nhật tài nguyên thất bại"),
   });
@@ -435,7 +461,11 @@ export function ShopDetailPage() {
               <h2>Danh mục sản phẩm</h2>
               <button
                 className="btn btn-primary"
-                onClick={() => navigate(`/shops/${shopId}/categories/new`)}
+                onClick={() => {
+                  setEditingCategory(null);
+                  categoryForm.reset({ name: "", description: "" });
+                  setIsCategoryModalOpen(true);
+                }}
               >
                 <Plus size={18} />
                 Danh mục mới
@@ -482,6 +512,7 @@ export function ShopDetailPage() {
                                   description: category.description || "",
                                 });
                                 setEditingCategory(category);
+                                setIsCategoryModalOpen(true);
                               }}
                             >
                               <Edit2 size={16} />
@@ -504,7 +535,14 @@ export function ShopDetailPage() {
           <div className="resources-tab">
             <div className="tab-header">
               <h2>Tài nguyên</h2>
-              <button className="btn btn-primary">
+              <button 
+                className="btn btn-primary"
+                onClick={() => {
+                  setEditingResource(null);
+                  resourceForm.reset({ name: "", category_id: "", description: "", price: 0, is_active: true });
+                  setIsResourceModalOpen(true);
+                }}
+              >
                 <Plus size={18} />
                 Tài nguyên mới
               </button>
@@ -573,6 +611,7 @@ export function ShopDetailPage() {
                                   is_active: resource.is_active,
                                 });
                                 setEditingResource(resource);
+                                setIsResourceModalOpen(true);
                               }}
                             >
                               <Edit2 size={16} />
@@ -887,19 +926,29 @@ export function ShopDetailPage() {
         </div>
       )}
 
-      {/* Edit Category Modal */}
-      {editingCategory && (
-        <div className="modal-overlay" onClick={() => setEditingCategory(null)}>
+      {/* Category Modal */}
+      {isCategoryModalOpen && (
+        <div className="modal-overlay" onClick={() => {
+          setIsCategoryModalOpen(false);
+          setEditingCategory(null);
+        }}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Sửa Danh Mục</h2>
-              <button className="modal-close" onClick={() => setEditingCategory(null)}>
+              <h2 className="modal-title">{editingCategory ? "Sửa Danh Mục" : "Tạo Danh Mục"}</h2>
+              <button className="modal-close" onClick={() => {
+                setIsCategoryModalOpen(false);
+                setEditingCategory(null);
+              }}>
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={categoryForm.handleSubmit((data) => 
-              updateCategoryMutation.mutate({ id: editingCategory.id, data })
-            )}>
+            <form onSubmit={categoryForm.handleSubmit((data) => {
+              if (editingCategory) {
+                updateCategoryMutation.mutate({ id: editingCategory.id, data });
+              } else {
+                createCategoryMutation.mutate({ shop_id: shopId!, name: data.name, description: data.description });
+              }
+            })}>
               <div className="modal-body">
                 <div className="form-group">
                   <label className="form-label">Tên danh mục</label>
@@ -922,16 +971,23 @@ export function ShopDetailPage() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setEditingCategory(null)}>
+                <button type="button" className="btn btn-secondary" onClick={() => {
+                  setIsCategoryModalOpen(false);
+                  setEditingCategory(null);
+                }}>
                   Hủy
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={updateCategoryMutation.isPending}>
-                  {updateCategoryMutation.isPending ? (
+                <button 
+                  type="submit" 
+                  className="btn btn-primary" 
+                  disabled={updateCategoryMutation.isPending || createCategoryMutation.isPending}
+                >
+                  {updateCategoryMutation.isPending || createCategoryMutation.isPending ? (
                     <span className="spinner" style={{ width: 18, height: 18 }} />
                   ) : (
                     <>
-                      <Check size={18} />
-                      Cập nhật
+                      {editingCategory ? <Check size={18} /> : <Plus size={18} />}
+                      {editingCategory ? "Cập nhật" : "Tạo mới"}
                     </>
                   )}
                 </button>
@@ -941,19 +997,36 @@ export function ShopDetailPage() {
         </div>
       )}
 
-      {/* Edit Resource Modal */}
-      {editingResource && (
-        <div className="modal-overlay" onClick={() => setEditingResource(null)}>
+      {/* Resource Modal */}
+      {isResourceModalOpen && (
+        <div className="modal-overlay" onClick={() => {
+          setIsResourceModalOpen(false);
+          setEditingResource(null);
+        }}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Sửa Tài Nguyên</h2>
-              <button className="modal-close" onClick={() => setEditingResource(null)}>
+              <h2 className="modal-title">{editingResource ? "Sửa Tài Nguyên" : "Tạo Tài Nguyên"}</h2>
+              <button className="modal-close" onClick={() => {
+                setIsResourceModalOpen(false);
+                setEditingResource(null);
+              }}>
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={resourceForm.handleSubmit((data) => 
-              updateResourceMutation.mutate({ id: editingResource.id, data })
-            )}>
+            <form onSubmit={resourceForm.handleSubmit((data) => {
+              if (editingResource) {
+                updateResourceMutation.mutate({ id: editingResource.id, data });
+              } else {
+                createResourceMutation.mutate({ 
+                  shop_id: shopId!, 
+                  name: data.name,
+                  category_id: data.category_id || null, 
+                  description: data.description || null,
+                  price: data.price,
+                  is_active: data.is_active 
+                });
+              }
+            })}>
               <div className="modal-body">
                 <div className="form-group">
                   <label className="form-label">Tên tài nguyên</label>
@@ -1010,16 +1083,23 @@ export function ShopDetailPage() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setEditingResource(null)}>
+                <button type="button" className="btn btn-secondary" onClick={() => {
+                  setIsResourceModalOpen(false);
+                  setEditingResource(null);
+                }}>
                   Hủy
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={updateResourceMutation.isPending}>
-                  {updateResourceMutation.isPending ? (
+                <button 
+                  type="submit" 
+                  className="btn btn-primary" 
+                  disabled={updateResourceMutation.isPending || createResourceMutation.isPending}
+                >
+                  {updateResourceMutation.isPending || createResourceMutation.isPending ? (
                     <span className="spinner" style={{ width: 18, height: 18 }} />
                   ) : (
                     <>
-                      <Check size={18} />
-                      Cập nhật
+                      {editingResource ? <Check size={18} /> : <Plus size={18} />}
+                      {editingResource ? "Cập nhật" : "Tạo mới"}
                     </>
                   )}
                 </button>
