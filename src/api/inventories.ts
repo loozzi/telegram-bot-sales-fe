@@ -16,7 +16,7 @@ export const inventoriesApi = {
     query?: string,
     isSold?: boolean
   ): Promise<PaginatedResponse<Inventory>> => {
-    const response = await apiClient.get("/api/v1/inventories/inventories/", {
+    const response = await apiClient.get("/api/v1/inventories/", {
       params: {
         resource_id: resourceId,
         page,
@@ -30,14 +30,14 @@ export const inventoriesApi = {
 
   get: async (inventoryId: string): Promise<ResponseSchema<Inventory>> => {
     const response = await apiClient.get(
-      `/api/v1/inventories/inventories/${inventoryId}`
+      `/api/v1/inventories/${inventoryId}`
     );
     return response.data;
   },
 
   create: async (data: InventoryCreate): Promise<ResponseSchema<Inventory>> => {
     const response = await apiClient.post(
-      "/api/v1/inventories/inventories/",
+      "/api/v1/inventories/",
       data
     );
     return response.data;
@@ -48,7 +48,7 @@ export const inventoriesApi = {
     data: InventoryUpdate
   ): Promise<ResponseSchema<Inventory>> => {
     const response = await apiClient.put(
-      `/api/v1/inventories/inventories/${inventoryId}`,
+      `/api/v1/inventories/${inventoryId}`,
       data
     );
     return response.data;
@@ -56,7 +56,7 @@ export const inventoriesApi = {
 
   delete: async (inventoryId: string): Promise<ResponseSchema<null>> => {
     const response = await apiClient.delete(
-      `/api/v1/inventories/inventories/${inventoryId}`
+      `/api/v1/inventories/${inventoryId}`
     );
     return response.data;
   },
@@ -69,7 +69,7 @@ export const inventoriesApi = {
     formData.append("file", file);
 
     const response = await apiClient.post(
-      "/api/v1/inventories/inventories/upload",
+      "/api/v1/inventories/upload",
       formData,
       {
         params: { resource_id: resourceId },
@@ -83,7 +83,7 @@ export const inventoriesApi = {
     inventoryIds: string[]
   ): Promise<ResponseSchema<string[]>> => {
     const response = await apiClient.post(
-      "/api/v1/inventories/inventories/bulk-delete",
+      "/api/v1/inventories/bulk-delete",
       inventoryIds
     );
     return response.data;

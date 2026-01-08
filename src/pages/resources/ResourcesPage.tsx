@@ -433,12 +433,13 @@ export function ResourcesPage() {
                 </div>
 
                 <div className="form-group">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" {...register("is_active")} />
-                    <span className="form-label" style={{ marginBottom: 0 }}>
-                      Hoạt động
-                    </span>
-                  </label>
+                  <div className="flex items-center gap-3">
+                    <label className="toggle-switch">
+                      <input type="checkbox" {...register("is_active")} />
+                      <span className="slider"></span>
+                    </label>
+                    <span>Hoạt động</span>
+                  </div>
                 </div>
               </div>
               <div className="modal-footer">

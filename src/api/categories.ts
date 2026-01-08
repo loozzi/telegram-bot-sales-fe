@@ -9,7 +9,7 @@ import type {
 
 export const categoriesApi = {
   list: async (shopId: string): Promise<PaginatedResponse<Category>> => {
-    const response = await apiClient.get("/api/v1/categories/categories/", {
+    const response = await apiClient.get("/api/v1/categories/", {
       params: { shop_id: shopId },
     });
     return response.data;
@@ -17,13 +17,13 @@ export const categoriesApi = {
 
   get: async (categoryId: string): Promise<ResponseSchema<Category>> => {
     const response = await apiClient.get(
-      `/api/v1/categories/categories/${categoryId}`
+      `/api/v1/categories/${categoryId}`
     );
     return response.data;
   },
 
   create: async (data: CategoryCreate): Promise<ResponseSchema<Category>> => {
-    const response = await apiClient.post("/api/v1/categories/categories/", data);
+    const response = await apiClient.post("/api/v1/categories/", data);
     return response.data;
   },
 
@@ -32,7 +32,7 @@ export const categoriesApi = {
     data: CategoryUpdate
   ): Promise<ResponseSchema<Category>> => {
     const response = await apiClient.put(
-      `/api/v1/categories/categories/${categoryId}`,
+      `/api/v1/categories/${categoryId}`,
       data
     );
     return response.data;
@@ -40,7 +40,7 @@ export const categoriesApi = {
 
   delete: async (categoryId: string): Promise<ResponseSchema<null>> => {
     const response = await apiClient.delete(
-      `/api/v1/categories/categories/${categoryId}`
+      `/api/v1/categories/${categoryId}`
     );
     return response.data;
   },

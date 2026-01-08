@@ -9,7 +9,7 @@ import type {
 
 export const resourcesApi = {
   list: async (shopId: string): Promise<PaginatedResponse<Resource>> => {
-    const response = await apiClient.get("/api/v1/resources/resources/", {
+    const response = await apiClient.get("/api/v1/resources/", {
       params: { shop_id: shopId },
     });
     return response.data;
@@ -17,13 +17,13 @@ export const resourcesApi = {
 
   get: async (resourceId: string): Promise<ResponseSchema<Resource>> => {
     const response = await apiClient.get(
-      `/api/v1/resources/resources/${resourceId}`
+      `/api/v1/resources/${resourceId}`
     );
     return response.data;
   },
 
   create: async (data: ResourceCreate): Promise<ResponseSchema<Resource>> => {
-    const response = await apiClient.post("/api/v1/resources/resources/", data);
+    const response = await apiClient.post("/api/v1/resources/", data);
     return response.data;
   },
 
@@ -32,7 +32,7 @@ export const resourcesApi = {
     data: ResourceUpdate
   ): Promise<ResponseSchema<Resource>> => {
     const response = await apiClient.put(
-      `/api/v1/resources/resources/${resourceId}`,
+      `/api/v1/resources/${resourceId}`,
       data
     );
     return response.data;
@@ -40,7 +40,7 @@ export const resourcesApi = {
 
   delete: async (resourceId: string): Promise<ResponseSchema<null>> => {
     const response = await apiClient.delete(
-      `/api/v1/resources/resources/${resourceId}`
+      `/api/v1/resources/${resourceId}`
     );
     return response.data;
   },
@@ -50,7 +50,7 @@ export const resourcesApi = {
     isActive: boolean
   ): Promise<ResponseSchema<Resource>> => {
     const response = await apiClient.put(
-      `/api/v1/resources/resources/update-status/${resourceId}`,
+      `/api/v1/resources/update-status/${resourceId}`,
       null,
       {
         params: { is_active: isActive },

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Store, Edit2, Trash2, Bot, X, Check } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,6 +23,7 @@ type ShopForm = z.infer<typeof shopSchema>;
 
 export function ShopsPage() {
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingShop, setEditingShop] = useState<Shop | null>(null);
     const [deletingShop, setDeletingShop] = useState<Shop | null>(null);
@@ -150,7 +152,11 @@ export function ShopsPage() {
             ) : (
                 <div className="shops-grid">
                     {data?.items?.map((shop) => (
-                        <div key={shop.id} className="shop-card card">
+                        <div 
+                            key={shop.id} 
+                            className="shop-card card clickable-card"
+                            onClick={() => navigate(`/shops/${shop.id}`)}
+                        >
                             <div className="shop-card-header">
                                 <div className="shop-icon">
                                     <Store size={24} />
@@ -193,7 +199,7 @@ export function ShopsPage() {
                                 )}
                             </div>
 
-                            <div className="shop-actions">
+                            <div className="shop-actions" onClick={(e) => e.stopPropagation()}>
                                 <button
                                     className="btn btn-secondary btn-sm"
                                     onClick={() => shop.is_active ? stopBotMutation.mutate(shop.id) : startBotMutation.mutate(shop.id)}

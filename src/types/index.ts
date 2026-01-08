@@ -89,6 +89,7 @@ export interface Category {
   shop_id: string;
   name: string;
   description?: string | null;
+  resources?: Resource[]; // populated when fetching single category
 }
 
 export interface CategoryCreate {

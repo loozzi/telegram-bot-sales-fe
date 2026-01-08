@@ -10,6 +10,17 @@
     gap: 16px;
 }
 
+.clickable-card {
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.clickable-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    border-color: var(--accent-primary);
+}
+
 .shop-card-header {
     display: flex;
     gap: 16px;

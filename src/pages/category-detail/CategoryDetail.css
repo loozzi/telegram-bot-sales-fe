@@ -1,0 +1,13 @@
+.category-detail-page {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.clickable-row {
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.clickable-row:hover {
+    background: var(--bg-hover);
+}

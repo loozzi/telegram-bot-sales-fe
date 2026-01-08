@@ -196,7 +196,7 @@
                 }
             }
         },
-        "/api/v1/bank/cron/sync": {
+        "/api/v1/cron/sync": {
             "post": {
                 "tags": [
                     "Bank",
@@ -204,7 +204,7 @@
                 ],
                 "summary": "Cron Sync Bank Transactions",
                 "description": "CRON JOB 1: Fetch bank transactions from API and save to database.\n\nThis endpoint should be called periodically (e.g., every 10-30 seconds)\nby an external cron job service.\n\nWorkflow:\n1. Get all active payment configurations\n2. For each payment config, fetch transactions from bank API\n3. Save new transactions to bank_transactions table with status=PENDING\n\nReturns:\n    Summary of sync results including new transactions count",
-                "operationId": "cron_sync_bank_transactions_api_v1_bank_cron_sync_post",
+                "operationId": "cron_sync_bank_transactions_api_v1_cron_sync_post",
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -217,7 +217,7 @@
                 }
             }
         },
-        "/api/v1/bank/cron/process": {
+        "/api/v1/cron/process": {
             "post": {
                 "tags": [
                     "Bank",
@@ -225,7 +225,7 @@
                 ],
                 "summary": "Cron Process Pending Transactions",
                 "description": "CRON JOB 2: Process pending bank transactions and fulfill orders.\n\nThis endpoint should be called periodically (e.g., every 10-30 seconds)\nby an external cron job service.\n\nWorkflow:\n1. Query all PENDING bank_transactions from database\n2. Match each with temp_transactions by content, amount, payment_id\n3. When matched: update statuses, mark inventory as sold, send Telegram notification\n\nReturns:\n    Summary of processing results including fulfilled orders count",
-                "operationId": "cron_process_pending_transactions_api_v1_bank_cron_process_post",
+                "operationId": "cron_process_pending_transactions_api_v1_cron_process_post",
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -238,7 +238,7 @@
                 }
             }
         },
-        "/api/v1/bank/cron/run-all": {
+        "/api/v1/cron/run-all": {
             "post": {
                 "tags": [
                     "Bank",
@@ -246,7 +246,7 @@
                 ],
                 "summary": "Cron Run All",
                 "description": "Run both cron jobs in sequence: sync then process.\n\nThis is a convenience endpoint that runs:\n1. CRON JOB 1: Sync bank transactions\n2. CRON JOB 2: Process pending transactions\n\nUseful when you want a single cron job to handle everything.\n\nReturns:\n    Combined results of both jobs",
-                "operationId": "cron_run_all_api_v1_bank_cron_run_all_post",
+                "operationId": "cron_run_all_api_v1_cron_run_all_post",
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -259,14 +259,14 @@
                 }
             }
         },
-        "/api/v1/bank/transactions": {
+        "/api/v1/transactions": {
             "get": {
                 "tags": [
                     "Bank"
                 ],
                 "summary": "List Bank Transactions",
                 "description": "List bank transactions with optional filters.\n\nArgs:\n    skip: Number of records to skip (pagination)\n    limit: Maximum number of records to return\n    bank_type: Filter by bank type\n    status: Filter by transaction status\n    payment_id: Filter by payment configuration ID",
-                "operationId": "list_bank_transactions_api_v1_bank_transactions_get",
+                "operationId": "list_bank_transactions_api_v1_transactions_get",
                 "parameters": [
                     {
                         "name": "skip",
@@ -364,14 +364,14 @@
                 }
             }
         },
-        "/api/v1/bank/transactions/{transaction_id}": {
+        "/api/v1/transactions/{transaction_id}": {
             "get": {
                 "tags": [
                     "Bank"
                 ],
                 "summary": "Get Bank Transaction",
                 "description": "Get a specific bank transaction by its external transaction ID.",
-                "operationId": "get_bank_transaction_api_v1_bank_transactions__transaction_id__get",
+                "operationId": "get_bank_transaction_api_v1_transactions__transaction_id__get",
                 "parameters": [
                     {
                         "name": "transaction_id",
@@ -407,14 +407,14 @@
                 }
             }
         },
-        "/api/v1/bank/sync": {
+        "/api/v1/sync": {
             "post": {
                 "tags": [
                     "Bank"
                 ],
                 "summary": "Trigger Bank Sync",
                 "description": "Manually trigger bank transaction synchronization.\n\nThis endpoint triggers a background sync job for all active payment configurations.",
-                "operationId": "trigger_bank_sync_api_v1_bank_sync_post",
+                "operationId": "trigger_bank_sync_api_v1_sync_post",
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -427,14 +427,14 @@
                 }
             }
         },
-        "/api/v1/bank/sync/now": {
+        "/api/v1/sync/now": {
             "post": {
                 "tags": [
                     "Bank"
                 ],
                 "summary": "Sync Bank Transactions Now",
                 "description": "Synchronously sync bank transactions (for testing/debugging).\n\nThis will wait for the sync to complete and return results.",
-                "operationId": "sync_bank_transactions_now_api_v1_bank_sync_now_post",
+                "operationId": "sync_bank_transactions_now_api_v1_sync_now_post",
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -447,14 +447,14 @@
                 }
             }
         },
-        "/api/v1/bank/pending": {
+        "/api/v1/pending": {
             "get": {
                 "tags": [
                     "Bank"
                 ],
                 "summary": "Get Pending Transactions",
                 "description": "Get pending bank transactions that need processing.",
-                "operationId": "get_pending_transactions_api_v1_bank_pending_get",
+                "operationId": "get_pending_transactions_api_v1_pending_get",
                 "parameters": [
                     {
                         "name": "limit",
@@ -493,14 +493,14 @@
                 }
             }
         },
-        "/api/v1/bank/transactions/{transaction_id}/status": {
+        "/api/v1/transactions/{transaction_id}/status": {
             "patch": {
                 "tags": [
                     "Bank"
                 ],
                 "summary": "Update Transaction Status",
                 "description": "Update a transaction's status.\n\nArgs:\n    transaction_id: External transaction ID\n    status: New status\n    content: Optional content/notes to add",
-                "operationId": "update_transaction_status_api_v1_bank_transactions__transaction_id__status_patch",
+                "operationId": "update_transaction_status_api_v1_transactions__transaction_id__status_patch",
                 "parameters": [
                     {
                         "name": "transaction_id",
@@ -558,14 +558,14 @@
                 }
             }
         },
-        "/api/v1/bank/types": {
+        "/api/v1/types": {
             "get": {
                 "tags": [
                     "Bank"
                 ],
                 "summary": "List Bank Types",
                 "description": "List all supported bank types.",
-                "operationId": "list_bank_types_api_v1_bank_types_get",
+                "operationId": "list_bank_types_api_v1_types_get",
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -578,14 +578,14 @@
                 }
             }
         },
-        "/api/v1/bank/qr": {
+        "/api/v1/qr": {
             "get": {
                 "tags": [
                     "Bank"
                 ],
                 "summary": "Generate Qr Code Url",
                 "description": "Generate VietQR code URL for bank payment.\n\nReturns a URL to the QR code image that can be used for payment.\nThe QR code follows VietQR standard and can be scanned by most banking apps.\n\nTemplates:\n- compact: Compact design with bank logo\n- compact2: Compact design v2 (recommended)\n- qr_only: QR code only without branding\n- print: Printable format with more details",
-                "operationId": "generate_qr_code_url_api_v1_bank_qr_get",
+                "operationId": "generate_qr_code_url_api_v1_qr_get",
                 "parameters": [
                     {
                         "name": "bank_type",
@@ -700,14 +700,14 @@
                 }
             }
         },
-        "/api/v1/bank/qr/supported-banks": {
+        "/api/v1/qr/supported-banks": {
             "get": {
                 "tags": [
                     "Bank"
                 ],
                 "summary": "List Qr Supported Banks",
                 "description": "List banks that support VietQR code generation.",
-                "operationId": "list_qr_supported_banks_api_v1_bank_qr_supported_banks_get",
+                "operationId": "list_qr_supported_banks_api_v1_qr_supported_banks_get",
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -1127,13 +1127,13 @@
                 }
             }
         },
-        "/api/v1/shops/shops/": {
+        "/api/v1/shops/": {
             "get": {
                 "tags": [
                     "shops"
                 ],
                 "summary": "List Shops",
-                "operationId": "list_shops_api_v1_shops_shops__get",
+                "operationId": "list_shops_api_v1_shops__get",
                 "responses": {
                     "200": {
                         "description": "Successful Response",
@@ -1157,7 +1157,7 @@
                     "shops"
                 ],
                 "summary": "Create Shop",
-                "operationId": "create_shop_api_v1_shops_shops__post",
+                "operationId": "create_shop_api_v1_shops__post",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -1197,13 +1197,58 @@
                 ]
             }
         },
-        "/api/v1/shops/shops/{shop_id}": {
+        "/api/v1/shops/{shop_id}": {
+            "get": {
+                "tags": [
+                    "shops"
+                ],
+                "summary": "Get Shop Detail",
+                "operationId": "get_shop_detail_api_v1_shops__shop_id__get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "shop_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Shop Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseSchema_ShopResponseSchema_"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "put": {
                 "tags": [
                     "shops"
                 ],
                 "summary": "Update Shop",
-                "operationId": "update_shop_api_v1_shops_shops__shop_id__put",
+                "operationId": "update_shop_api_v1_shops__shop_id__put",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1258,7 +1303,7 @@
                     "shops"
                 ],
                 "summary": "Delete Shop",
-                "operationId": "delete_shop_api_v1_shops_shops__shop_id__delete",
+                "operationId": "delete_shop_api_v1_shops__shop_id__delete",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1299,14 +1344,14 @@
                 }
             }
         },
-        "/api/v1/shops/shops/{shop_id}/payments": {
+        "/api/v1/shops/{shop_id}/payments": {
             "get": {
                 "tags": [
                     "shops"
                 ],
                 "summary": "List Payments",
                 "description": "Get all bank accounts/payment methods for a shop.",
-                "operationId": "list_payments_api_v1_shops_shops__shop_id__payments_get",
+                "operationId": "list_payments_api_v1_shops__shop_id__payments_get",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1368,7 +1413,7 @@
                 ],
                 "summary": "Create Payment",
                 "description": "Add a new bank account/payment method to a shop.",
-                "operationId": "create_payment_api_v1_shops_shops__shop_id__payments_post",
+                "operationId": "create_payment_api_v1_shops__shop_id__payments_post",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1419,14 +1464,14 @@
                 }
             }
         },
-        "/api/v1/shops/shops/{shop_id}/payments/{payment_id}": {
+        "/api/v1/shops/{shop_id}/payments/{payment_id}": {
             "get": {
                 "tags": [
                     "shops"
                 ],
                 "summary": "Get Payment",
                 "description": "Get details of a specific bank account/payment method.",
-                "operationId": "get_payment_api_v1_shops_shops__shop_id__payments__payment_id__get",
+                "operationId": "get_payment_api_v1_shops__shop_id__payments__payment_id__get",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1481,7 +1526,7 @@
                 ],
                 "summary": "Update Payment",
                 "description": "Update a bank account/payment method.",
-                "operationId": "update_payment_api_v1_shops_shops__shop_id__payments__payment_id__put",
+                "operationId": "update_payment_api_v1_shops__shop_id__payments__payment_id__put",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1546,7 +1591,7 @@
                 ],
                 "summary": "Delete Payment",
                 "description": "Delete a bank account/payment method.",
-                "operationId": "delete_payment_api_v1_shops_shops__shop_id__payments__payment_id__delete",
+                "operationId": "delete_payment_api_v1_shops__shop_id__payments__payment_id__delete",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1596,14 +1641,14 @@
                 }
             }
         },
-        "/api/v1/shops/shops/{shop_id}/payments/{payment_id}/status": {
+        "/api/v1/shops/{shop_id}/payments/{payment_id}/status": {
             "patch": {
                 "tags": [
                     "shops"
                 ],
                 "summary": "Update Payment Status",
                 "description": "Update the status of a bank account/payment method.",
-                "operationId": "update_payment_status_api_v1_shops_shops__shop_id__payments__payment_id__status_patch",
+                "operationId": "update_payment_status_api_v1_shops__shop_id__payments__payment_id__status_patch",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1661,14 +1706,14 @@
                 }
             }
         },
-        "/api/v1/categories/categories/": {
+        "/api/v1/categories/": {
             "get": {
                 "tags": [
                     "categories"
                 ],
                 "summary": "List Categories",
                 "description": "Lấy danh sách tất cả categories của một shop.",
-                "operationId": "list_categories_api_v1_categories_categories__get",
+                "operationId": "list_categories_api_v1_categories__get",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1714,7 +1759,7 @@
                 ],
                 "summary": "Create Category",
                 "description": "Tạo category mới.",
-                "operationId": "create_category_api_v1_categories_categories__post",
+                "operationId": "create_category_api_v1_categories__post",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1754,14 +1799,14 @@
                 }
             }
         },
-        "/api/v1/categories/categories/{category_id}": {
+        "/api/v1/categories/{category_id}": {
             "get": {
                 "tags": [
                     "categories"
                 ],
                 "summary": "Get Category",
-                "description": "Lấy thông tin chi tiết của một category.",
-                "operationId": "get_category_api_v1_categories_categories__category_id__get",
+                "description": "Lấy thông tin chi tiết của một category bao gồm danh sách resources.",
+                "operationId": "get_category_api_v1_categories__category_id__get",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1784,7 +1829,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ResponseSchema_CategoryResponseSchema_"
+                                    "$ref": "#/components/schemas/ResponseSchema_CategoryDetailResponseSchema_"
                                 }
                             }
                         }
@@ -1807,7 +1852,7 @@
                 ],
                 "summary": "Update Category",
                 "description": "Cập nhật thông tin category.",
-                "operationId": "update_category_api_v1_categories_categories__category_id__put",
+                "operationId": "update_category_api_v1_categories__category_id__put",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1863,7 +1908,7 @@
                 ],
                 "summary": "Delete Category",
                 "description": "Xóa category.",
-                "operationId": "delete_category_api_v1_categories_categories__category_id__delete",
+                "operationId": "delete_category_api_v1_categories__category_id__delete",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1904,13 +1949,13 @@
                 }
             }
         },
-        "/api/v1/resources/resources/": {
+        "/api/v1/resources/": {
             "get": {
                 "tags": [
                     "resources"
                 ],
                 "summary": "List Resources",
-                "operationId": "list_resources_api_v1_resources_resources__get",
+                "operationId": "list_resources_api_v1_resources__get",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1955,7 +2000,7 @@
                     "resources"
                 ],
                 "summary": "Create Resource",
-                "operationId": "create_resource_api_v1_resources_resources__post",
+                "operationId": "create_resource_api_v1_resources__post",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -1995,13 +2040,13 @@
                 }
             }
         },
-        "/api/v1/resources/resources/{resource_id}": {
+        "/api/v1/resources/{resource_id}": {
             "get": {
                 "tags": [
                     "resources"
                 ],
                 "summary": "Get Resource",
-                "operationId": "get_resource_api_v1_resources_resources__resource_id__get",
+                "operationId": "get_resource_api_v1_resources__resource_id__get",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -2046,7 +2091,7 @@
                     "resources"
                 ],
                 "summary": "Update Resource",
-                "operationId": "update_resource_api_v1_resources_resources__resource_id__put",
+                "operationId": "update_resource_api_v1_resources__resource_id__put",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -2101,7 +2146,7 @@
                     "resources"
                 ],
                 "summary": "Delete Resource",
-                "operationId": "delete_resource_api_v1_resources_resources__resource_id__delete",
+                "operationId": "delete_resource_api_v1_resources__resource_id__delete",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -2142,13 +2187,13 @@
                 }
             }
         },
-        "/api/v1/resources/resources/update-status/{resource_id}": {
+        "/api/v1/resources/update-status/{resource_id}": {
             "put": {
                 "tags": [
                     "resources"
                 ],
                 "summary": "Update Resource Status",
-                "operationId": "update_resource_status_api_v1_resources_resources_update_status__resource_id__put",
+                "operationId": "update_resource_status_api_v1_resources_update_status__resource_id__put",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -2198,13 +2243,13 @@
                 }
             }
         },
-        "/api/v1/inventories/inventories/": {
+        "/api/v1/inventories/": {
             "get": {
                 "tags": [
                     "inventories"
                 ],
                 "summary": "List Inventories",
-                "operationId": "list_inventories_api_v1_inventories_inventories__get",
+                "operationId": "list_inventories_api_v1_inventories__get",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -2287,7 +2332,7 @@
                     "inventories"
                 ],
                 "summary": "Create Inventory",
-                "operationId": "create_inventory_api_v1_inventories_inventories__post",
+                "operationId": "create_inventory_api_v1_inventories__post",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -2327,13 +2372,13 @@
                 }
             }
         },
-        "/api/v1/inventories/inventories/{inventory_id}": {
+        "/api/v1/inventories/{inventory_id}": {
             "get": {
                 "tags": [
                     "inventories"
                 ],
                 "summary": "Get Inventory",
-                "operationId": "get_inventory_api_v1_inventories_inventories__inventory_id__get",
+                "operationId": "get_inventory_api_v1_inventories__inventory_id__get",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -2378,7 +2423,7 @@
                     "inventories"
                 ],
                 "summary": "Update Inventory",
-                "operationId": "update_inventory_api_v1_inventories_inventories__inventory_id__put",
+                "operationId": "update_inventory_api_v1_inventories__inventory_id__put",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -2433,7 +2478,7 @@
                     "inventories"
                 ],
                 "summary": "Delete Inventory",
-                "operationId": "delete_inventory_api_v1_inventories_inventories__inventory_id__delete",
+                "operationId": "delete_inventory_api_v1_inventories__inventory_id__delete",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -2474,14 +2519,14 @@
                 }
             }
         },
-        "/api/v1/inventories/inventories/upload": {
+        "/api/v1/inventories/upload": {
             "post": {
                 "tags": [
                     "inventories"
                 ],
                 "summary": "Upload Inventory File",
                 "description": "Upload a text file with inventory records (one per line).",
-                "operationId": "upload_inventory_file_api_v1_inventories_inventories_upload_post",
+                "operationId": "upload_inventory_file_api_v1_inventories_upload_post",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -2503,7 +2548,7 @@
                     "content": {
                         "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/Body_upload_inventory_file_api_v1_inventories_inventories_upload_post"
+                                "$ref": "#/components/schemas/Body_upload_inventory_file_api_v1_inventories_upload_post"
                             }
                         }
                     }
@@ -2532,14 +2577,14 @@
                 }
             }
         },
-        "/api/v1/inventories/inventories/bulk-delete": {
+        "/api/v1/inventories/bulk-delete": {
             "post": {
                 "tags": [
                     "inventories"
                 ],
                 "summary": "Bulk Delete Inventories",
                 "description": "Bulk delete inventories by their IDs.",
-                "operationId": "bulk_delete_inventories_api_v1_inventories_inventories_bulk_delete_post",
+                "operationId": "bulk_delete_inventories_api_v1_inventories_bulk_delete_post",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2583,14 +2628,14 @@
                 ]
             }
         },
-        "/api/v1/orders/orders/shop/{shop_id}": {
+        "/api/v1/orders/shop/{shop_id}": {
             "get": {
                 "tags": [
                     "orders"
                 ],
                 "summary": "List Shop Orders",
                 "description": "Lấy danh sách orders của một shop.\n\n- **shop_id**: ID của shop cần lấy danh sách orders\n- **skip**: Số lượng records cần bỏ qua (pagination)\n- **limit**: Số lượng records tối đa trả về (max 500)\n- **user_telegram_id**: Lọc theo Telegram ID của user (optional)\n- **resource_id**: Lọc theo resource ID (optional)",
-                "operationId": "list_shop_orders_api_v1_orders_orders_shop__shop_id__get",
+                "operationId": "list_shop_orders_api_v1_orders_shop__shop_id__get",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -2694,14 +2739,14 @@
                 }
             }
         },
-        "/api/v1/orders/orders/{order_id}": {
+        "/api/v1/orders/{order_id}": {
             "get": {
                 "tags": [
                     "orders"
                 ],
                 "summary": "Get Order",
                 "description": "Lấy thông tin chi tiết của một order.\n\n- **order_id**: ID của order cần lấy thông tin",
-                "operationId": "get_order_api_v1_orders_orders__order_id__get",
+                "operationId": "get_order_api_v1_orders__order_id__get",
                 "security": [
                     {
                         "HTTPBearer": []
@@ -2943,7 +2988,7 @@
                 ],
                 "title": "BankType"
             },
-            "Body_upload_inventory_file_api_v1_inventories_inventories_upload_post": {
+            "Body_upload_inventory_file_api_v1_inventories_upload_post": {
                 "properties": {
                     "file": {
                         "type": "string",
@@ -2955,7 +3000,7 @@
                 "required": [
                     "file"
                 ],
-                "title": "Body_upload_inventory_file_api_v1_inventories_inventories_upload_post"
+                "title": "Body_upload_inventory_file_api_v1_inventories_upload_post"
             },
             "BotListResponse": {
                 "properties": {
@@ -3105,6 +3150,48 @@
                     "name"
                 ],
                 "title": "CategoryCreateSchema"
+            },
+            "CategoryDetailResponseSchema": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Category ID"
+                    },
+                    "shop_id": {
+                        "type": "string",
+                        "title": "Shop ID"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Category Name"
+                    },
+                    "description": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Category Description"
+                    },
+                    "resources": {
+                        "items": {
+                            "$ref": "#/components/schemas/ResourceInCategorySchema"
+                        },
+                        "type": "array",
+                        "title": "Resources"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "shop_id",
+                    "name"
+                ],
+                "title": "CategoryDetailResponseSchema",
+                "description": "Schema for category detail with resources list"
             },
             "CategoryUpdateSchema": {
                 "properties": {
@@ -3935,6 +4022,51 @@
                 ],
                 "title": "ResourceCreateSchema"
             },
+            "ResourceInCategorySchema": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Resource ID"
+                    },
+                    "shop_id": {
+                        "type": "string",
+                        "title": "Shop ID"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Resource Name"
+                    },
+                    "description": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Resource Description"
+                    },
+                    "price": {
+                        "type": "number",
+                        "title": "Price"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "title": "Is Active"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "shop_id",
+                    "name",
+                    "price",
+                    "is_active"
+                ],
+                "title": "ResourceInCategorySchema",
+                "description": "Schema for resource in category detail"
+            },
             "ResourceResponseSchema": {
                 "properties": {
                     "id": {
@@ -4149,6 +4281,49 @@
                 },
                 "type": "object",
                 "title": "ResponseSchema[BulkUploadResponseSchema]"
+            },
+            "ResponseSchema_CategoryDetailResponseSchema_": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "title": "Success",
+                        "default": true
+                    },
+                    "data": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CategoryDetailResponseSchema"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "message": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Message"
+                    },
+                    "error": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Error"
+                    }
+                },
+                "type": "object",
+                "title": "ResponseSchema[CategoryDetailResponseSchema]"
             },
             "ResponseSchema_CategoryResponseSchema_": {
                 "properties": {

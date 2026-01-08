@@ -10,6 +10,9 @@ import { Layout } from './components/layout';
 import { LoginPage, RegisterPage } from './pages/auth';
 import { DashboardPage } from './pages/dashboard';
 import { ShopsPage } from './pages/shops';
+import { ShopDetailPage } from './pages/shop-detail';
+import { CategoryDetailPage } from './pages/category-detail';
+import { ResourceDetailPage } from './pages/resource-detail';
 import { CategoriesPage } from './pages/categories';
 import { ResourcesPage } from './pages/resources';
 import { InventoriesPage } from './pages/inventories';
@@ -81,6 +84,9 @@ function App() {
           >
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/shops" element={<ShopsPage />} />
+            <Route path="/shops/:shopId" element={<ShopDetailPage />} />
+            <Route path="/shops/:shopId/categories/:categoryId" element={<CategoryDetailPage />} />
+            <Route path="/shops/:shopId/resources/:resourceId" element={<ResourceDetailPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/resources" element={<ResourcesPage />} />
             <Route path="/inventories" element={<InventoriesPage />} />
