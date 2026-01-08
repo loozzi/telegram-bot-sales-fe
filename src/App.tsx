@@ -10,6 +10,7 @@ import { Layout } from './components/layout';
 import { LoginPage, RegisterPage } from './pages/auth';
 import { DashboardPage } from './pages/dashboard';
 import { ShopsPage } from './pages/shops';
+import { CategoriesPage } from './pages/categories';
 import { ResourcesPage } from './pages/resources';
 import { InventoriesPage } from './pages/inventories';
 import { BankPage } from './pages/bank';
@@ -80,6 +81,7 @@ function App() {
           >
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/shops" element={<ShopsPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/resources" element={<ResourcesPage />} />
             <Route path="/inventories" element={<InventoriesPage />} />
             <Route path="/bank" element={<BankPage />} />

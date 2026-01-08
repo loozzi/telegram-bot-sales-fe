@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Store,
+  Folder,
   Package,
   Boxes,
   Wallet,
@@ -21,6 +22,7 @@ import "./Sidebar.css";
 const navItems = [
   { path: "/dashboard", icon: LayoutDashboard, label: "sidebar.dashboard" },
   { path: "/shops", icon: Store, label: "sidebar.shops" },
+  { path: "/categories", icon: Folder, label: "sidebar.categories" },
   { path: "/payments", icon: CreditCard, label: "sidebar.payments" },
   { path: "/resources", icon: Package, label: "sidebar.resources" },
   { path: "/inventories", icon: Boxes, label: "sidebar.inventories" },

@@ -83,12 +83,32 @@ export interface ShopUpdate {
   is_active?: boolean | null;
 }
 
+// ============ Category Types ============
+export interface Category {
+  id: string;
+  shop_id: string;
+  name: string;
+  description?: string | null;
+}
+
+export interface CategoryCreate {
+  shop_id: string;
+  name: string;
+  description?: string | null;
+}
+
+export interface CategoryUpdate {
+  name?: string | null;
+  description?: string | null;
+}
+
 // ============ Resource Types ============
 export interface Resource {
   id: string;
   shop_id: string;
   name: string;
-  resource_type: string;
+  category_id?: string | null;
+  category?: Category | null;
   description?: string | null;
   price: number;
   is_active: boolean;
@@ -97,15 +117,15 @@ export interface Resource {
 export interface ResourceCreate {
   shop_id: string;
   name: string;
-  resource_type: string;
+  category_id?: string | null;
   description?: string | null;
   price: number;
-  is_active: boolean;
+  is_active?: boolean;
 }
 
 export interface ResourceUpdate {
   name?: string | null;
-  resource_type?: string | null;
+  category_id?: string | null;
   description?: string | null;
   price?: number | null;
   is_active?: boolean | null;

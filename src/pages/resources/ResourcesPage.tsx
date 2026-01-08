@@ -1,18 +1,18 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Package, Edit2, Trash2, X, Check, Power } from "lucide-react";
+import { Plus, Package, Edit2, Trash2, X, Check, Power, Filter } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast from "react-hot-toast";
-import { resourcesApi, shopsApi } from "../../api";
+import { resourcesApi, shopsApi, categoriesApi } from "../../api";
 import type { Resource, ResourceCreate, Shop } from "../../types";
 import "./Resources.css";
 
 const resourceSchema = z.object({
   shop_id: z.string().min(1, "Cửa hàng là bắt buộc"),
   name: z.string().min(1, "Tên là bắt buộc").max(100),
-  resource_type: z.string().min(1, "Loại là bắt buộc").max(50),
+  category_id: z.string().optional(),
   description: z.string().max(500).optional(),
   price: z.number().min(0, "Giá phải là số dương"),
   is_active: z.boolean(),
@@ -23,6 +23,7 @@ type ResourceForm = z.infer<typeof resourceSchema>;
 export function ResourcesPage() {
   const queryClient = useQueryClient();
   const [selectedShopId, setSelectedShopId] = useState<string>("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
   const [deletingResource, setDeletingResource] = useState<Resource | null>(
@@ -32,6 +33,12 @@ export function ResourcesPage() {
   const { data: shopsData } = useQuery({
     queryKey: ["shops"],
     queryFn: shopsApi.list,
+  });
+
+  const { data: categoriesData } = useQuery({
+    queryKey: ["categories", selectedShopId],
+    queryFn: () => categoriesApi.list(selectedShopId),
+    enabled: !!selectedShopId,
   });
 
   const { data: resourcesData, isLoading } = useQuery({
@@ -95,7 +102,7 @@ export function ResourcesPage() {
     reset({
       shop_id: selectedShopId,
       name: "",
-      resource_type: "",
+      category_id: "",
       description: "",
       price: 0,
       is_active: true,
@@ -108,7 +115,7 @@ export function ResourcesPage() {
     reset({
       shop_id: resource.shop_id,
       name: resource.name,
-      resource_type: resource.resource_type,
+      category_id: resource.category_id || "",
       description: resource.description || "",
       price: resource.price,
       is_active: resource.is_active,
@@ -138,6 +145,16 @@ export function ResourcesPage() {
   };
 
   const shops: Shop[] = shopsData?.items || [];
+  const categories = categoriesData?.items || [];
+
+  // Filter resources by category
+  const filteredResources = useMemo(() => {
+    if (!resourcesData?.items) return [];
+    if (!selectedCategoryId) return resourcesData.items;
+    return resourcesData.items.filter(
+      (resource) => resource.category_id === selectedCategoryId
+    );
+  }, [resourcesData?.items, selectedCategoryId]);
 
   return (
     <div className="resources-page animate-fadeIn">
@@ -164,7 +181,10 @@ export function ResourcesPage() {
           <select
             className="form-input"
             value={selectedShopId}
-            onChange={(e) => setSelectedShopId(e.target.value)}
+            onChange={(e) => {
+              setSelectedShopId(e.target.value);
+              setSelectedCategoryId("");
+            }}
           >
             <option value="">-- Chọn cửa hàng --</option>
             {shops.map((shop) => (
@@ -174,6 +194,26 @@ export function ResourcesPage() {
             ))}
           </select>
         </div>
+        {selectedShopId && categories.length > 0 && (
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">
+              <Filter size={16} style={{ marginRight: 4 }} />
+              Lọc theo Danh Mục
+            </label>
+            <select
+              className="form-input"
+              value={selectedCategoryId}
+              onChange={(e) => setSelectedCategoryId(e.target.value)}
+            >
+              <option value="">-- Tất cả danh mục --</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {!selectedShopId ? (
@@ -187,6 +227,14 @@ export function ResourcesPage() {
       ) : isLoading ? (
         <div className="page-loader">
           <div className="spinner spinner-lg" />
+        </div>
+      ) : filteredResources.length === 0 && selectedCategoryId ? (
+        <div className="empty-state card">
+          <Package size={64} className="empty-state-icon" />
+          <h3 className="empty-state-title">Không có tài nguyên</h3>
+          <p className="empty-state-text">
+            Không tìm thấy tài nguyên nào trong danh mục này.
+          </p>
         </div>
       ) : resourcesData?.items?.length === 0 ? (
         <div className="empty-state card">
@@ -206,7 +254,7 @@ export function ResourcesPage() {
             <thead>
               <tr>
                 <th>Tên</th>
-                <th>Loại</th>
+                <th>Danh Mục</th>
                 <th>Mô Tả</th>
                 <th>Giá</th>
                 <th style={{ width: 100 }}>Trạng Thái</th>
@@ -214,16 +262,20 @@ export function ResourcesPage() {
               </tr>
             </thead>
             <tbody>
-              {resourcesData?.items?.map((resource) => (
+              {filteredResources.map((resource) => (
                 <tr
                   key={resource.id}
                   className={!resource.is_active ? "opacity-60" : ""}
                 >
                   <td className="font-medium">{resource.name}</td>
                   <td>
-                    <span className="badge badge-info">
-                      {resource.resource_type}
-                    </span>
+                    {resource.category ? (
+                      <span className="badge badge-info">
+                        {resource.category.name}
+                      </span>
+                    ) : (
+                      <span className="text-secondary">-</span>
+                    )}
                   </td>
                   <td
                     className="text-secondary truncate"
@@ -331,18 +383,28 @@ export function ResourcesPage() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Loại</label>
-                  <input
-                    type="text"
+                  <label className="form-label">Danh Mục</label>
+                  <select
                     className={`form-input ${
-                      errors.resource_type ? "error" : ""
+                      errors.category_id ? "error" : ""
                     }`}
-                    placeholder="Ví dụ: tài khoản, key, license"
-                    {...register("resource_type")}
-                  />
-                  {errors.resource_type && (
+                    {...register("category_id")}
+                  >
+                    <option value="">-- Không chọn danh mục --</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  {categories.length === 0 && selectedShopId && (
+                    <p className="form-hint">
+                      Chưa có danh mục. Vui lòng tạo danh mục trước.
+                    </p>
+                  )}
+                  {errors.category_id && (
                     <span className="form-error">
-                      {errors.resource_type.message}
+                      {errors.category_id.message}
                     </span>
                   )}
                 </div>
