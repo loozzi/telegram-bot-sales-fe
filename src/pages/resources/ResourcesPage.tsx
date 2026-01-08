@@ -198,14 +198,14 @@ export function ResourcesPage() {
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label">
               <Filter size={16} style={{ marginRight: 4 }} />
-              Lọc theo Danh Mục
+              Lọc theo gian hàng
             </label>
             <select
               className="form-input"
               value={selectedCategoryId}
               onChange={(e) => setSelectedCategoryId(e.target.value)}
             >
-              <option value="">-- Tất cả danh mục --</option>
+              <option value="">-- Tất cả gian hàng --</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -233,7 +233,7 @@ export function ResourcesPage() {
           <Package size={64} className="empty-state-icon" />
           <h3 className="empty-state-title">Không có tài nguyên</h3>
           <p className="empty-state-text">
-            Không tìm thấy tài nguyên nào trong danh mục này.
+            Không tìm thấy tài nguyên nào trong gian hàng này.
           </p>
         </div>
       ) : resourcesData?.items?.length === 0 ? (
@@ -254,7 +254,7 @@ export function ResourcesPage() {
             <thead>
               <tr>
                 <th>Tên</th>
-                <th>Danh Mục</th>
+                <th>Gian hàng</th>
                 <th>Mô Tả</th>
                 <th>Giá</th>
                 <th style={{ width: 100 }}>Trạng Thái</th>
@@ -383,14 +383,14 @@ export function ResourcesPage() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Danh Mục</label>
+                  <label className="form-label">gian hàng</label>
                   <select
                     className={`form-input ${
                       errors.category_id ? "error" : ""
                     }`}
                     {...register("category_id")}
                   >
-                    <option value="">-- Không chọn danh mục --</option>
+                    <option value="">-- Không chọn gian hàng --</option>
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
@@ -399,7 +399,7 @@ export function ResourcesPage() {
                   </select>
                   {categories.length === 0 && selectedShopId && (
                     <p className="form-hint">
-                      Chưa có danh mục. Vui lòng tạo danh mục trước.
+                      Chưa có gian hàng. Vui lòng tạo gian hàng trước.
                     </p>
                   )}
                   {errors.category_id && (

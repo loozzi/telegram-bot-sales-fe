@@ -173,11 +173,11 @@ export function ShopDetailPage() {
     mutationFn: (data: CategoryCreate) => categoriesApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories", shopId] });
-      toast.success("Tạo danh mục thành công!");
+      toast.success("Tạo gian hàng thành công!");
       setIsCategoryModalOpen(false);
       categoryForm.reset();
     },
-    onError: () => toast.error("Tạo danh mục thất bại"),
+    onError: () => toast.error("Tạo gian hàng thất bại"),
   });
 
   const updateCategoryMutation = useMutation({
@@ -185,11 +185,11 @@ export function ShopDetailPage() {
       categoriesApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories", shopId] });
-      toast.success("Cập nhật danh mục thành công!");
+      toast.success("Cập nhật gian hàng thành công!");
       setEditingCategory(null);
       setIsCategoryModalOpen(false);
     },
-    onError: () => toast.error("Cập nhật danh mục thất bại"),
+    onError: () => toast.error("Cập nhật gian hàng thất bại"),
   });
 
   const createResourceMutation = useMutation({
@@ -406,7 +406,7 @@ export function ShopDetailPage() {
             onClick={() => setActiveTab("categories")}
           >
             <Folder size={18} />
-            Danh mục ({categories.length})
+            Gian hàng ({categories.length})
           </button>
           <button
             className={`tab ${activeTab === "resources" ? "active" : ""}`}
@@ -440,7 +440,7 @@ export function ShopDetailPage() {
               <div className="stat-card card">
                 <Folder size={24} className="stat-icon" />
                 <div className="stat-info">
-                  <p className="stat-label">Danh mục</p>
+                  <p className="stat-label">Gian hàng</p>
                   <p className="stat-value">{categories.length}</p>
                 </div>
               </div>
@@ -458,7 +458,7 @@ export function ShopDetailPage() {
         {activeTab === "categories" && (
           <div className="categories-tab">
             <div className="tab-header">
-              <h2>Danh mục sản phẩm</h2>
+              <h2>Gian hàng</h2>
               <button
                 className="btn btn-primary"
                 onClick={() => {
@@ -468,15 +468,15 @@ export function ShopDetailPage() {
                 }}
               >
                 <Plus size={18} />
-                Danh mục mới
+                Gian hàng mới
               </button>
             </div>
             {categories.length === 0 ? (
               <div className="empty-state card">
                 <Folder size={48} className="empty-state-icon" />
-                <h3 className="empty-state-title">Chưa có danh mục</h3>
+                <h3 className="empty-state-title">Chưa có gian hàng</h3>
                 <p className="empty-state-text">
-                  Tạo danh mục để phân loại sản phẩm của bạn.
+                  Tạo gian hàng để phân loại sản phẩm của bạn.
                 </p>
               </div>
             ) : (
@@ -484,7 +484,7 @@ export function ShopDetailPage() {
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Tên danh mục</th>
+                      <th>Tên gian hàng</th>
                       <th>Mô tả</th>
                       <th style={{ width: 120 }}>Hành động</th>
                     </tr>
@@ -561,7 +561,7 @@ export function ShopDetailPage() {
                   <thead>
                     <tr>
                       <th>Tên</th>
-                      <th>Danh mục</th>
+                      <th>Gian hàng</th>
                       <th>Giá</th>
                       <th>Trạng thái</th>
                       <th style={{ width: 120 }}>Hành động</th>
@@ -934,7 +934,7 @@ export function ShopDetailPage() {
         }}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">{editingCategory ? "Sửa Danh Mục" : "Tạo Danh Mục"}</h2>
+              <h2 className="modal-title">{editingCategory ? "Sửa Gian Hàng" : "Tạo Gian Hàng"}</h2>
               <button className="modal-close" onClick={() => {
                 setIsCategoryModalOpen(false);
                 setEditingCategory(null);
@@ -951,7 +951,7 @@ export function ShopDetailPage() {
             })}>
               <div className="modal-body">
                 <div className="form-group">
-                  <label className="form-label">Tên danh mục</label>
+                  <label className="form-label">Tên gian hàng</label>
                   <input
                     type="text"
                     className={`form-input ${categoryForm.formState.errors.name ? "error" : ""}`}
@@ -1040,12 +1040,12 @@ export function ShopDetailPage() {
                   )}
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Danh mục</label>
+                  <label className="form-label">Gian hàng</label>
                   <select
                     className="form-input"
                     {...resourceForm.register("category_id")}
                   >
-                    <option value="">Không có danh mục</option>
+                    <option value="">Không có gian hàng</option>
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
                         {cat.name}

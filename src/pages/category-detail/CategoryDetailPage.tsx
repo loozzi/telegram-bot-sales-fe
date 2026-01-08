@@ -163,7 +163,7 @@ export function CategoryDetailPage() {
   if (!category || !shop) {
     return (
       <div className="empty-state card">
-        <h3>Không tìm thấy danh mục</h3>
+        <h3>Không tìm thấy gian hàng</h3>
         <button
           className="btn btn-primary mt-4"
           onClick={() => navigate(`/shops/${shopId}`)}
@@ -202,7 +202,7 @@ export function CategoryDetailPage() {
           <Package size={64} className="empty-state-icon" />
           <h3 className="empty-state-title">Chưa có tài nguyên</h3>
           <p className="empty-state-text">
-            Tạo tài nguyên đầu tiên trong danh mục này.
+            Tạo tài nguyên đầu tiên trong gian hàng này.
           </p>
           <button className="btn btn-primary mt-4" onClick={openCreateModal}>
             <Plus size={18} />
@@ -305,9 +305,9 @@ export function CategoryDetailPage() {
                   )}
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Danh mục</label>
+                  <label className="form-label">Gian hàng</label>
                   <select className="form-input" {...register("category_id")}>
-                    <option value="">Không có danh mục</option>
+                    <option value="">Không có gian hàng</option>
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
                         {cat.name}

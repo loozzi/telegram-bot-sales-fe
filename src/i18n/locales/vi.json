@@ -43,7 +43,7 @@
     "appName": "TeleBot Sales",
     "dashboard": "Tổng quan",
     "shops": "Cửa hàng",
-    "categories": "Danh mục",
+    "categories": "Gian hàng",
     "payments": "Phương thức thanh toán",
     "resources": "Tài nguyên",
     "inventories": "Kho hàng",
@@ -90,7 +90,7 @@
     "name": "Tên tài nguyên",
     "description": "Mô tả",
     "price": "Giá",
-    "category": "Danh mục",
+    "category": "Gian hàng",
     "noResources": "Chưa có tài nguyên nào",
     "createFirst": "Tạo tài nguyên đầu tiên của bạn"
   },

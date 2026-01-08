@@ -41,10 +41,10 @@ export function CategoriesPage() {
     mutationFn: (data: CategoryCreate) => categoriesApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
-      toast.success("Tạo danh mục thành công!");
+      toast.success("Tạo gian hàng thành công!");
       closeModal();
     },
-    onError: () => toast.error("Tạo danh mục thất bại"),
+    onError: () => toast.error("Tạo gian hàng thất bại"),
   });
 
   const updateMutation = useMutation({
@@ -52,20 +52,20 @@ export function CategoriesPage() {
       categoriesApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
-      toast.success("Cập nhật danh mục thành công!");
+      toast.success("Cập nhật gian hàng thành công!");
       closeModal();
     },
-    onError: () => toast.error("Cập nhật danh mục thất bại"),
+    onError: () => toast.error("Cập nhật gian hàng thất bại"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => categoriesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
-      toast.success("Xóa danh mục thành công!");
+      toast.success("Xóa gian hàng thành công!");
       setDeletingCategory(null);
     },
-    onError: () => toast.error("Xóa danh mục thất bại"),
+    onError: () => toast.error("Xóa gian hàng thất bại"),
   });
 
   const {
@@ -117,9 +117,9 @@ export function CategoriesPage() {
     <div className="categories-page animate-fadeIn">
       <div className="page-header flex justify-between items-center">
         <div>
-          <h1 className="page-title">Danh Mục</h1>
+          <h1 className="page-title">gian hàng</h1>
           <p className="page-subtitle">
-            Quản lý danh mục sản phẩm của cửa hàng
+            Quản lý gian hàng sản phẩm của cửa hàng
           </p>
         </div>
         <button
@@ -128,7 +128,7 @@ export function CategoriesPage() {
           disabled={!selectedShopId}
         >
           <Plus size={18} />
-          Danh Mục Mới
+          Gian hàng Mới
         </button>
       </div>
 
@@ -155,7 +155,7 @@ export function CategoriesPage() {
           <Folder size={64} className="empty-state-icon" />
           <h3 className="empty-state-title">Chọn một cửa hàng</h3>
           <p className="empty-state-text">
-            Vui lòng chọn cửa hàng ở trên để xem và quản lý danh mục.
+            Vui lòng chọn cửa hàng ở trên để xem và quản lý gian hàng.
           </p>
         </div>
       ) : isLoading ? (
@@ -165,13 +165,13 @@ export function CategoriesPage() {
       ) : categoriesData?.items?.length === 0 ? (
         <div className="empty-state card">
           <Folder size={64} className="empty-state-icon" />
-          <h3 className="empty-state-title">Chưa có danh mục</h3>
+          <h3 className="empty-state-title">Chưa có gian hàng</h3>
           <p className="empty-state-text">
-            Tạo danh mục đầu tiên để phân loại sản phẩm.
+            Tạo gian hàng đầu tiên để phân loại sản phẩm.
           </p>
           <button className="btn btn-primary mt-4" onClick={openCreateModal}>
             <Plus size={18} />
-            Tạo Danh Mục
+            Tạo gian hàng
           </button>
         </div>
       ) : (
@@ -179,7 +179,7 @@ export function CategoriesPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Tên Danh Mục</th>
+                <th>Tên gian hàng</th>
                 <th>Mô Tả</th>
                 <th style={{ width: 120 }}>Hành Động</th>
               </tr>
@@ -220,7 +220,7 @@ export function CategoriesPage() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">
-                {editingCategory ? "Sửa Danh Mục" : "Tạo Danh Mục"}
+                {editingCategory ? "Sửa gian hàng" : "Tạo gian hàng"}
               </h2>
               <button className="modal-close" onClick={closeModal}>
                 <X size={20} />
@@ -248,7 +248,7 @@ export function CategoriesPage() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Tên Danh Mục</label>
+                  <label className="form-label">Tên gian hàng</label>
                   <input
                     type="text"
                     className={`form-input ${errors.name ? "error" : ""}`}
@@ -264,7 +264,7 @@ export function CategoriesPage() {
                   <label className="form-label">Mô Tả</label>
                   <textarea
                     className="form-input"
-                    placeholder="Mô tả về danh mục này (tùy chọn)"
+                    placeholder="Mô tả về gian hàng này (tùy chọn)"
                     rows={3}
                     {...register("description")}
                   />
@@ -311,7 +311,7 @@ export function CategoriesPage() {
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Xóa Danh Mục</h2>
+              <h2 className="modal-title">Xóa gian hàng</h2>
               <button
                 className="modal-close"
                 onClick={() => setDeletingCategory(null)}
@@ -321,11 +321,11 @@ export function CategoriesPage() {
             </div>
             <div className="modal-body">
               <p>
-                Bạn có chắc chắn muốn xóa danh mục{" "}
+                Bạn có chắc chắn muốn xóa gian hàng{" "}
                 <strong>{deletingCategory.name}</strong>?
               </p>
               <p className="text-warning mt-2">
-                Lưu ý: Các sản phẩm trong danh mục này sẽ không bị xóa, nhưng sẽ không còn thuộc danh mục nào.
+                Lưu ý: Các sản phẩm trong gian hàng này sẽ không bị xóa, nhưng sẽ không còn thuộc gian hàng nào.
               </p>
             </div>
             <div className="modal-footer">

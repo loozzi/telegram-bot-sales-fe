@@ -454,12 +454,12 @@ export function ResourceDetailPage() {
                   )}
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Danh mục</label>
+                  <label className="form-label">Gian hàng</label>
                   <select
                     className="form-input"
                     {...resourceForm.register("category_id")}
                   >
-                    <option value="">Không có danh mục</option>
+                    <option value="">Không có gian hàng</option>
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
                         {cat.name}
