@@ -1,27 +1,27 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Package,
-  Edit2,
-  X,
-  Check,
-  Boxes,
-  Upload,
-  Trash2,
-  FileUp,
-  Search,
-} from "lucide-react";
-import { useState, useRef } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Boxes,
+  Check,
+  Edit2,
+  FileUp,
+  Package,
+  Search,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
+import { useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { Breadcrumb } from "../../components/Breadcrumb";
-import { shopsApi } from "../../api/shops";
-import { resourcesApi } from "../../api/resources";
+import { useNavigate, useParams } from "react-router-dom";
+import { z } from "zod";
 import { categoriesApi } from "../../api/categories";
 import { inventoriesApi } from "../../api/inventories";
-import type { Resource, Inventory, ResourceUpdate } from "../../types";
+import { resourcesApi } from "../../api/resources";
+import { shopsApi } from "../../api/shops";
+import { Breadcrumb } from "../../components/Breadcrumb";
+import type { Inventory, ResourceUpdate } from "../../types";
 import "./ResourceDetail.css";
 
 const resourceSchema = z.object({

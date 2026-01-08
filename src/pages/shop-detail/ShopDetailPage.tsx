@@ -1,35 +1,40 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import dayjs from "dayjs";
 import {
-  Store,
-  Folder,
-  Package,
-  Settings,
   BarChart3,
   Bot,
-  Edit2,
-  Power,
-  Plus,
-  Trash2,
-  X,
   Check,
+  ChevronLeft,
+  ChevronRight,
   CreditCard,
+  Edit2,
   Eye,
   EyeOff,
+  Folder,
+  Package,
+  Plus,
+  Power,
+  ShoppingBag,
+  Store,
   ToggleLeft,
   ToggleRight,
+  Trash2,
+  User,
+  X
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import toast from "react-hot-toast";
-import { shopsApi, categoriesApi, resourcesApi, botApi, paymentsApi } from "../../api";
+import { useNavigate, useParams } from "react-router-dom";
+import { z } from "zod";
+import { botApi, categoriesApi, ordersApi, paymentsApi, resourcesApi, shopsApi } from "../../api";
 import { Breadcrumb } from "../../components/Breadcrumb";
-import type { Shop, Category, Resource, ShopUpdate, CategoryUpdate, ResourceUpdate, Payment, PaymentCreate, PaymentStatus, BankType } from "../../types";
+import type { BankType, Category, CategoryUpdate, Order, Payment, PaymentCreate, PaymentStatus, Resource, ResourceUpdate, Shop, ShopUpdate } from "../../types";
 import "./ShopDetail.css";
 
-type TabType = "overview" | "categories" | "resources" | "settings";
+type TabType = "overview" | "categories" | "resources" | "settings" | "orders";
+const PAGE_SIZE = 20;
 
 const shopSchema = z.object({
   name: z.string().min(1, "Tên là bắt buộc").max(100).optional(),
@@ -97,6 +102,9 @@ export function ShopDetailPage() {
   const [deletingPayment, setDeletingPayment] = useState<Payment | null>(null);
   const [showTokenId, setShowTokenId] = useState<string | null>(null);
 
+  // Orders State
+  const [ordersPage, setOrdersPage] = useState(1);
+
   const { data: shopData, isLoading } = useQuery({
     queryKey: ["shop", shopId],
     queryFn: () => shopsApi.get(shopId!),
@@ -118,6 +126,16 @@ export function ShopDetailPage() {
   const { data: paymentsData } = useQuery({
     queryKey: ["payments", shopId],
     queryFn: () => paymentsApi.list(shopId!),
+    enabled: !!shopId,
+  });
+
+  const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
+    queryKey: ["orders", shopId, ordersPage],
+    queryFn: () => ordersApi.listShopOrders({
+      shop_id: shopId!,
+      skip: (ordersPage - 1) * PAGE_SIZE,
+      limit: PAGE_SIZE,
+    }),
     enabled: !!shopId,
   });
 
@@ -377,6 +395,13 @@ export function ShopDetailPage() {
           >
             <CreditCard size={18} />
             Phương thức thanh toán
+          </button>
+          <button
+            className={`tab ${activeTab === "orders" ? "active" : ""}`}
+            onClick={() => setActiveTab("orders")}
+          >
+            <ShoppingBag size={18} />
+            Đơn hàng
           </button>
         </div>
       </div>
@@ -668,6 +693,98 @@ export function ShopDetailPage() {
               </div>
             )}
           </div>
+        )}
+
+        {/* Orders Tab */}
+        {activeTab === "orders" && (
+           <div className="orders-tab">
+             <div className="flex justify-between items-center mb-6">
+               <h2 className="section-title">Danh sách đơn hàng</h2>
+             </div>
+
+             {isLoadingOrders ? (
+                <div className="page-loader">
+                   <div className="spinner spinner-lg" />
+                </div>
+             ) : !ordersData?.items || ordersData.items.length === 0 ? (
+                <div className="empty-state card">
+                    <ShoppingBag size={64} className="empty-state-icon" />
+                    <h3 className="empty-state-title">Chưa có đơn hàng</h3>
+                    <p className="empty-state-text">
+                        Đơn hàng sẽ xuất hiện ở đây khi có khách hàng mua sắm.
+                    </p>
+                </div>
+             ) : (
+                <div className="table-container card">
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Sản phẩm</th>
+                                <th>Giá</th>
+                                <th>Tổng tiền</th>
+                                <th>Ngày tạo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {ordersData.items.map((order: Order) => (
+                                <tr key={order.id}>
+                                    <td><code className="text-xs">{order.id.substring(0, 8)}...</code></td>
+                                    <td>
+                                        <div className="flex items-center gap-2">
+                                            <User size={14} className="text-secondary" />
+                                            <span>{order.user_username || order.user_telegram_id || 'Unknown'}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="flex items-center gap-2">
+                                            <Package size={14} className="text-secondary" />
+                                            <span className="font-medium">{order.resource_name || 'N/A'}</span>
+                                        </div>
+                                    </td>
+                                    <td>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.price_at_purchase)}</td>
+                                    <td className="font-semibold text-primary">
+                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.price_at_purchase * (order.order_items?.length || 1))}
+                                    </td>
+                                    <td className="text-secondary text-sm">
+                                        {dayjs(order.created_at).format('DD/MM/YYYY HH:mm')}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+
+                     {/* Pagination */}
+                     {Math.ceil((ordersData.total || 0) / PAGE_SIZE) > 1 && (
+                        <div className="pagination p-4 border-t border-gray-100 flex justify-between items-center">
+                            <div className="text-sm text-secondary">
+                                Hiển thị {((ordersPage - 1) * PAGE_SIZE) + 1} - {Math.min(ordersPage * PAGE_SIZE, ordersData.total)} trong số {ordersData.total}
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    className="btn btn-ghost btn-sm"
+                                    onClick={() => setOrdersPage(p => Math.max(1, p - 1))}
+                                    disabled={ordersPage === 1}
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <span className="px-3 py-1 flex items-center text-sm font-medium">
+                                    Trang {ordersPage} / {Math.ceil(ordersData.total / PAGE_SIZE)}
+                                </span>
+                                <button
+                                    className="btn btn-ghost btn-sm"
+                                    onClick={() => setOrdersPage(p => Math.min(Math.ceil(ordersData.total / PAGE_SIZE), p + 1))}
+                                    disabled={ordersPage === Math.ceil(ordersData.total / PAGE_SIZE)}
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+             )}
+           </div>
         )}
       </div>
 
