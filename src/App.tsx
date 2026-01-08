@@ -4,22 +4,22 @@ import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store';
 
 // Layout
-import { Layout } from './components/layout';
+import { ShopLayout } from './components/layout/ShopLayout';
 
 // Pages
 import { LoginPage, RegisterPage } from './pages/auth';
-import { DashboardPage } from './pages/dashboard';
+
 import { ShopsPage } from './pages/shops';
-import { ShopDetailPage } from './pages/shop-detail';
+
+// Shop Detail Tabs
+import { ShopOverview } from './pages/shop-detail/tabs/ShopOverview';
+import { ShopCategories } from './pages/shop-detail/tabs/ShopCategories';
+import { ShopResources } from './pages/shop-detail/tabs/ShopResources';
+import { ShopSettings } from './pages/shop-detail/tabs/ShopSettings';
+import { ShopOrders } from './pages/shop-detail/tabs/ShopOrders';
+
 import { CategoryDetailPage } from './pages/category-detail';
 import { ResourceDetailPage } from './pages/resource-detail';
-import { CategoriesPage } from './pages/categories';
-import { ResourcesPage } from './pages/resources';
-import { InventoriesPage } from './pages/inventories';
-import { BankPage } from './pages/bank';
-import { BotPage } from './pages/bot';
-import { PaymentsPage } from './pages/payments';
-import { OrdersPage } from './pages/orders';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,7 +45,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/shops" replace />;
   }
 
   return <>{children}</>;
@@ -76,29 +76,38 @@ function App() {
 
           {/* Protected routes */}
           <Route
+            path="/shops"
             element={
               <ProtectedRoute>
-                <Layout />
+                <ShopsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Shop specific routes */}
+          <Route
+            path="/shops/:shopId"
+            element={
+              <ProtectedRoute>
+                <ShopLayout />
               </ProtectedRoute>
             }
           >
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/shops" element={<ShopsPage />} />
-            <Route path="/shops/:shopId" element={<ShopDetailPage />} />
-            <Route path="/shops/:shopId/categories/:categoryId" element={<CategoryDetailPage />} />
-            <Route path="/shops/:shopId/resources/:resourceId" element={<ResourceDetailPage />} />
-            <Route path="/categories" element={<CategoriesPage />} />
-            <Route path="/resources" element={<ResourcesPage />} />
-            <Route path="/inventories" element={<InventoriesPage />} />
-            <Route path="/bank" element={<BankPage />} />
-            <Route path="/bot" element={<BotPage />} />
-            <Route path="/payments" element={<PaymentsPage />} />
-            <Route path="/orders" element={<OrdersPage />} />
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<ShopOverview />} />
+            <Route path="categories" element={<ShopCategories />} />
+            <Route path="resources" element={<ShopResources />} />
+            <Route path="settings" element={<ShopSettings />} />
+            <Route path="orders" element={<ShopOrders />} />
+
+            {/* Detail pages for items within a shop */}
+            <Route path="categories/:categoryId" element={<CategoryDetailPage />} />
+            <Route path="resources/:resourceId" element={<ResourceDetailPage />} />
           </Route>
 
-          {/* Redirect root to dashboard or login */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* Redirect root to shops */}
+          <Route path="/" element={<Navigate to="/shops" replace />} />
+          <Route path="*" element={<Navigate to="/shops" replace />} />
         </Routes>
       </BrowserRouter>
 

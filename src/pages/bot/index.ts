@@ -1,1 +1,0 @@
-export { BotPage } from './BotPage';
