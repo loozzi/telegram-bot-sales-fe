@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit2, Package, Plus } from "lucide-react";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Edit2, Package, Plus, ToggleLeft, ToggleRight } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -31,6 +31,7 @@ export function ShopResources() {
         queryKey: ["resources", shopId],
         queryFn: () => resourcesApi.list(shopId!),
         enabled: !!shopId,
+        placeholderData: keepPreviousData,
     });
 
     const resources = resourcesData?.items || [];
@@ -62,9 +63,19 @@ export function ShopResources() {
             queryClient.invalidateQueries({ queryKey: ["resources", shopId] });
             toast.success("Cập nhật sản phẩm thành công!");
             setEditingResource(null);
-            setIsResourceModalOpen(false);
+            // setIsResourceModalOpen(false);
         },
         onError: () => toast.error("Cập nhật sản phẩm thất bại"),
+    });
+
+    const toggleResourceStatusMutation = useMutation({
+        mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
+            resourcesApi.updateStatus(id, is_active),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["resources", shopId] });
+            toast.success("Cập nhật trạng thái thành công!");
+        },
+        onError: () => toast.error("Cập nhật thất bại"),
     });
 
     const ResourceModal = () => (
@@ -232,11 +243,24 @@ export function ShopResources() {
                                     </td>
                                     <td>{resource.price.toLocaleString()} đ</td>
                                     <td>
-                                        {resource.is_active ? (
-                                            <span className="badge badge-success">Hoạt động</span>
-                                        ) : (
-                                            <span className="badge badge-error">Không hoạt động</span>
-                                        )}
+                                        <button
+                                            className={`status-toggle ${resource.is_active ? "available" : "sold"}`}
+                                            style={{ border: "none", background: "none", padding: 0 }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleResourceStatusMutation.mutate({
+                                                    id: resource.id,
+                                                    is_active: !resource.is_active,
+                                                });
+                                            }}
+                                            title={resource.is_active ? "Vô hiệu hóa" : "Kích hoạt"}
+                                        >
+                                            {resource.is_active ? (
+                                                <ToggleRight size={28} className="text-success" />
+                                            ) : (
+                                                <ToggleLeft size={28} className="text-secondary" />
+                                            )}
+                                        </button>
                                     </td>
                                     <td onClick={(e) => e.stopPropagation()}>
                                         <div className="flex gap-2">

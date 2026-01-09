@@ -1949,6 +1949,64 @@
                 }
             }
         },
+        "/api/v1/categories/{category_id}/toggle-active": {
+            "patch": {
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Toggle Category Active",
+                "description": "Toggle active/deactivate category.",
+                "operationId": "toggle_category_active_api_v1_categories__category_id__toggle_active_patch",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Category Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoryToggleActiveSchema"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseSchema_CategoryResponseSchema_"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/resources/": {
             "get": {
                 "tags": [
@@ -3165,6 +3223,10 @@
                         "type": "string",
                         "title": "Category Name"
                     },
+                    "is_active": {
+                        "type": "boolean",
+                        "title": "Is Active"
+                    },
                     "description": {
                         "anyOf": [
                             {
@@ -3188,10 +3250,24 @@
                 "required": [
                     "id",
                     "shop_id",
-                    "name"
+                    "name",
+                    "is_active"
                 ],
                 "title": "CategoryDetailResponseSchema",
                 "description": "Schema for category detail with resources list"
+            },
+            "CategoryToggleActiveSchema": {
+                "properties": {
+                    "is_active": {
+                        "type": "boolean",
+                        "title": "Is Active"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "is_active"
+                ],
+                "title": "CategoryToggleActiveSchema"
             },
             "CategoryUpdateSchema": {
                 "properties": {
@@ -5148,6 +5224,22 @@
                         "type": "string",
                         "title": "Category Name"
                     },
+                    "is_active": {
+                        "type": "boolean",
+                        "title": "Is Active"
+                    },
+                    "resource_count": {
+                        "type": "integer",
+                        "title": "Number of Resources in Category"
+                    },
+                    "active_resource_count": {
+                        "type": "integer",
+                        "title": "Number of Active Resources in Category"
+                    },
+                    "inventory_quantity": {
+                        "type": "integer",
+                        "title": "Total Inventory Quantity in Category"
+                    },
                     "description": {
                         "anyOf": [
                             {
@@ -5164,7 +5256,11 @@
                 "required": [
                     "id",
                     "shop_id",
-                    "name"
+                    "name",
+                    "is_active",
+                    "resource_count",
+                    "active_resource_count",
+                    "inventory_quantity"
                 ],
                 "title": "CategoryResponseSchema"
             },

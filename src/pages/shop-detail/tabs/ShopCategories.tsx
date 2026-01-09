@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit2, Folder, Plus, Trash2, X, Package, Eye } from "lucide-react";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Edit2, Folder, Plus, Trash2, X, Package, Eye, ToggleLeft, ToggleRight } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -63,6 +63,7 @@ export function ShopCategories() {
       return { items: res?.data?.resources || [] };
     },
     enabled: !!selectedCategory?.id,
+    placeholderData: keepPreviousData,
   });
 
   // Sort resources by created_at descending (newest first)
@@ -100,6 +101,25 @@ export function ShopCategories() {
       setIsCategoryModalOpen(false);
     },
     onError: () => toast.error("Cập nhật gian hàng thất bại"),
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: (id: string) => categoriesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories", shopId] });
+      toast.success("Xóa gian hàng thành công!");
+    },
+    onError: () => toast.error("Xóa gian hàng thất bại"),
+  });
+
+  const toggleCategoryStatusMutation = useMutation({
+    mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
+      categoriesApi.toggleActive(id, is_active),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories", shopId] });
+      toast.success("Cập nhật trạng thái thành công!");
+    },
+    onError: () => toast.error("Cập nhật thất bại"),
   });
 
   // --- Mutations (Resources) ---
@@ -290,16 +310,26 @@ export function ShopCategories() {
                                         </td>
                                         <td>{res.price?.toLocaleString()} đ</td>
                                         <td>
-                                            <div
-                                                className={`badge border-none outline-none cursor-pointer tooltip ${res.is_active ? "badge-success" : "badge-error"}`}
-                                                data-tip={res.is_active ? "Click để tắt" : "Click để bật"}
+                                            <button
+                                                className={`status-toggle ${
+                                                  res.is_active ? "available" : "sold"
+                                                }`}
+                                                style={{ border: "none", background: "none", padding: 0 }}
                                                 onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleResourceStatusMutation.mutate({ id: res.id, is_active: !res.is_active });
+                                                  e.stopPropagation();
+                                                  toggleResourceStatusMutation.mutate({
+                                                    id: res.id,
+                                                    is_active: !res.is_active,
+                                                  });
                                                 }}
-                                            >
-                                                {res.is_active ? "Đang hoạt động" : "Đang tắt"}
-                                            </div>
+                                                title={res.is_active ? "Vô hiệu hóa" : "Kích hoạt"}
+                                              >
+                                                {res.is_active ? (
+                                                  <ToggleRight size={28} className="text-success" />
+                                                ) : (
+                                                  <ToggleLeft size={28} className="text-secondary" />
+                                                )}
+                                              </button>
                                         </td>
                                         <td onClick={(e) => e.stopPropagation()}>
                                              <div className="flex gap-2 justify-end">
@@ -425,6 +455,9 @@ export function ShopCategories() {
               <tr>
                 <th>Tên gian hàng</th>
                 <th>Mô tả</th>
+                <th>Sản phẩm</th>
+                <th>Kho</th>
+                <th>Trạng thái</th>
                 <th style={{ width: 120 }}>Hành động</th>
               </tr>
             </thead>
@@ -432,20 +465,73 @@ export function ShopCategories() {
               {categories.map((category) => (
                 <tr
                   key={category.id}
-                  className="clickable-row"
-                  onClick={() => setSelectedCategory(category)}
+                  className="hover:bg-base-200"
                 >
                   <td className="font-medium">{category.name}</td>
                   <td className="text-secondary truncate">
                     {category.description || "-"}
                   </td>
+                  <td>
+                    <div className="flex flex-col text-xs">
+                         <span className="font-medium">{category.active_resource_count} đang bán</span>
+                         <span className="text-secondary">Tổng: {category.resource_count}</span>
+                    </div>
+                  </td>
+                  <td>
+                      <div className="font-medium">{category.inventory_quantity}</div>
+                  </td>
+                   <td onClick={(e) => e.stopPropagation()}>
+                    <button
+                      className={`status-toggle ${
+                        category.is_active ? "available" : "sold"
+                      }`}
+                      style={{ border: "none", background: "none", padding: 0 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleCategoryStatusMutation.mutate({
+                          id: category.id,
+                          is_active: !category.is_active,
+                        });
+                      }}
+                      title={category.is_active ? "Vô hiệu hóa" : "Kích hoạt"}
+                    >
+                      {category.is_active ? (
+                        <ToggleRight size={28} className="text-success" />
+                      ) : (
+                        <ToggleLeft size={28} className="text-secondary" />
+                      )}
+                    </button>
+                  </td>
                   <td onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-2">
+                       <button
+                        className="btn btn-ghost btn-sm tooltip"
+                        data-tip="Xem chi tiết"
+                        onClick={() => setSelectedCategory(category)}
+                      >
+                        <Eye size={16} />
+                      </button>
                       <button
-                        className="btn btn-ghost btn-sm"
+                        className="btn btn-ghost btn-sm tooltip"
+                        data-tip="Chỉnh sửa"
                         onClick={() => openCategoryModal(category)}
                       >
                         <Edit2 size={16} />
+                      </button>
+                       <button
+                        className="btn btn-ghost btn-sm text-error tooltip"
+                        data-tip="Xóa gian hàng"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Bạn có chắc chắn muốn xóa gian hàng này? Tất cả sản phẩm trong gian hàng cũng sẽ bị xóa."
+                            )
+                          ) {
+                            deleteCategoryMutation.mutate(category.id);
+                          }
+                        }}
+                      >
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </td>

@@ -89,6 +89,10 @@ export interface Category {
   shop_id: string;
   name: string;
   description?: string | null;
+  is_active: boolean;
+  resource_count: number;
+  active_resource_count: number;
+  inventory_quantity: number;
   resources?: Resource[]; // populated when fetching single category
 }
 
@@ -101,6 +105,7 @@ export interface CategoryCreate {
 export interface CategoryUpdate {
   name?: string | null;
   description?: string | null;
+  is_active?: boolean | null;
 }
 
 // ============ Resource Types ============

@@ -44,6 +44,14 @@ export const categoriesApi = {
     );
     return response.data;
   },
+
+  toggleActive: async (categoryId: string, is_active: boolean): Promise<ResponseSchema<Category>> => {
+    const response = await apiClient.post(
+      `/api/v1/categories/${categoryId}/toggle-active`,
+      { is_active }
+    );
+    return response.data;
+  },
 };
 
 export default categoriesApi;
