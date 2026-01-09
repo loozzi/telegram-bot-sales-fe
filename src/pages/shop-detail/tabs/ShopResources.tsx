@@ -43,11 +43,11 @@ export function ShopResources() {
         mutationFn: (data: ResourceCreate) => resourcesApi.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["resources", shopId] });
-            toast.success("Tạo tài nguyên thành công!");
+            toast.success("Tạo sản phẩm thành công!");
             setIsResourceModalOpen(false);
             resourceForm.reset();
         },
-        onError: () => toast.error("Tạo tài nguyên thất bại"),
+        onError: () => toast.error("Tạo sản phẩm thất bại"),
     });
 
     const updateResourceMutation = useMutation({
@@ -60,11 +60,11 @@ export function ShopResources() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["resources", shopId] });
-            toast.success("Cập nhật tài nguyên thành công!");
+            toast.success("Cập nhật sản phẩm thành công!");
             setEditingResource(null);
             setIsResourceModalOpen(false);
         },
-        onError: () => toast.error("Cập nhật tài nguyên thất bại"),
+        onError: () => toast.error("Cập nhật sản phẩm thất bại"),
     });
 
     const ResourceModal = () => (
@@ -72,7 +72,7 @@ export function ShopResources() {
             <div className="modal-overlay">
                 <div className="modal-content">
                     <h2 className="modal-title">
-                        {editingResource ? "Chỉnh sửa tài nguyên" : "Thêm tài nguyên mới"}
+                        {editingResource ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
                     </h2>
                     <form
                         onSubmit={resourceForm.handleSubmit((data) => {
@@ -95,7 +95,7 @@ export function ShopResources() {
                         })}
                     >
                         <div className="form-group">
-                            <label>Tên tài nguyên</label>
+                            <label>Tên sản phẩm</label>
                             <input
                                 {...resourceForm.register("name")}
                                 className="form-input"
@@ -172,7 +172,7 @@ export function ShopResources() {
     return (
         <div className="resources-tab animate-fadeIn">
             <div className="tab-header">
-                <h2>Tài nguyên</h2>
+                <h2>Sản phẩm</h2>
                 <button
                     className="btn btn-primary"
                     onClick={() => {
@@ -188,15 +188,15 @@ export function ShopResources() {
                     }}
                 >
                     <Plus size={18} />
-                    Tài nguyên mới
+                    Sản phẩm mới
                 </button>
             </div>
             {resources.length === 0 ? (
                 <div className="empty-state card">
                     <Package size={48} className="empty-state-icon" />
-                    <h3 className="empty-state-title">Chưa có tài nguyên</h3>
+                    <h3 className="empty-state-title">Chưa có sản phẩm</h3>
                     <p className="empty-state-text">
-                        Tạo tài nguyên sản phẩm cho cửa hàng.
+                        Tạo sản phẩm cho cửa hàng.
                     </p>
                 </div>
             ) : (

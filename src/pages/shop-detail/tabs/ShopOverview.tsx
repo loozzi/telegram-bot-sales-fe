@@ -35,7 +35,7 @@ export function ShopOverview() {
                 <div className="stat-card card">
                     <Package size={24} className="stat-icon" />
                     <div className="stat-info">
-                        <p className="stat-label">Tài nguyên</p>
+                        <p className="stat-label">Sản phẩm</p>
                         <p className="stat-value">{resources.length}</p>
                     </div>
                 </div>

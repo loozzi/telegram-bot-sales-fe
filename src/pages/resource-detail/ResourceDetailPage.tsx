@@ -91,7 +91,7 @@ export function ResourceDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resource", resourceId] });
       queryClient.invalidateQueries({ queryKey: ["resources"] });
-      toast.success("Cập nhật tài nguyên thành công!");
+      toast.success("Cập nhật sản phẩm thành công!");
       setIsEditModalOpen(false);
     },
     onError: () => toast.error("Cập nhật thất bại"),
@@ -204,7 +204,7 @@ export function ResourceDetailPage() {
     return (
       <div className="empty-state card">
         <Package size={64} className="empty-state-icon" />
-        <h3 className="empty-state-title">Không tìm thấy tài nguyên</h3>
+        <h3 className="empty-state-title">Không tìm thấy sản phẩm</h3>
         <button
           className="btn btn-primary mt-4"
           onClick={() => navigate(`/shops/${shopId}`)}
@@ -435,7 +435,7 @@ export function ResourceDetailPage() {
         <div className="modal-overlay" onClick={() => setIsEditModalOpen(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Sửa Tài Nguyên</h2>
+              <h2 className="modal-title">Sửa sản phẩm</h2>
               <button className="modal-close" onClick={() => setIsEditModalOpen(false)}>
                 <X size={20} />
               </button>
@@ -443,7 +443,7 @@ export function ResourceDetailPage() {
             <form onSubmit={resourceForm.handleSubmit((data) => updateMutation.mutate(data))}>
               <div className="modal-body">
                 <div className="form-group">
-                  <label className="form-label">Tên tài nguyên</label>
+                  <label className="form-label">Tên sản phẩm</label>
                   <input
                     type="text"
                     className={`form-input ${resourceForm.formState.errors.name ? "error" : ""}`}

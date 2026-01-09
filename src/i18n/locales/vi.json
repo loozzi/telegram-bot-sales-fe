@@ -45,7 +45,7 @@
     "shops": "Cửa hàng",
     "categories": "Gian hàng",
     "payments": "Phương thức thanh toán",
-    "resources": "Tài nguyên",
+    "resources": "Sản phẩm",
     "inventories": "Kho hàng",
     "orders": "Đơn hàng",
     "bank": "Giao dịch ngân hàng",
@@ -56,7 +56,7 @@
     "subtitle": "Đây là những gì đang diễn ra với doanh nghiệp của bạn hôm nay.",
     "stats": {
       "totalShops": "Tổng số cửa hàng",
-      "activeResources": "Tài nguyên hoạt động",
+      "activeResources": "Sản phẩm hoạt động",
       "inventoryItems": "Sản phẩm trong kho",
       "transactions": "Giao dịch"
     },
@@ -83,23 +83,23 @@
     "deleteSuccess": "Xóa cửa hàng thành công!"
   },
   "resources": {
-    "title": "Tài nguyên",
-    "subtitle": "Quản lý tài nguyên sản phẩm của bạn",
-    "create": "Tạo tài nguyên mới",
-    "edit": "Sửa tài nguyên",
-    "name": "Tên tài nguyên",
+    "title": "Sản phẩm",
+    "subtitle": "Quản lý sản phẩm của bạn",
+    "create": "Tạo sản phẩm mới",
+    "edit": "Sửa sản phẩm",
+    "name": "Tên sản phẩm",
     "description": "Mô tả",
     "price": "Giá",
     "category": "Gian hàng",
-    "noResources": "Chưa có tài nguyên nào",
-    "createFirst": "Tạo tài nguyên đầu tiên của bạn"
+    "noResources": "Chưa có sản phẩm nào",
+    "createFirst": "Tạo sản phẩm đầu tiên của bạn"
   },
   "inventories": {
     "title": "Kho hàng",
     "subtitle": "Quản lý tồn kho sản phẩm",
     "create": "Thêm hàng vào kho",
     "shop": "Cửa hàng",
-    "resource": "Tài nguyên",
+    "resource": "Sản phẩm",
     "quantity": "Số lượng",
     "sold": "Đã bán",
     "available": "Còn lại",

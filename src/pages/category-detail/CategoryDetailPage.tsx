@@ -55,7 +55,7 @@ export function CategoryDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resources"] });
       queryClient.invalidateQueries({ queryKey: ["category", categoryId] });
-      toast.success("Tạo tài nguyên thành công!");
+      toast.success("Tạo sản phẩm thành công!");
       closeModal();
     },
     onError: () => toast.error("Tạo thất bại"),
@@ -83,7 +83,7 @@ export function CategoryDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resources"] });
       queryClient.invalidateQueries({ queryKey: ["category", categoryId] });
-      toast.success("Xóa tài nguyên thành công!");
+      toast.success("Xóa sản phẩm thành công!");
     },
     onError: () => toast.error("Xóa thất bại"),
   });
@@ -193,20 +193,20 @@ export function CategoryDetailPage() {
         </div>
         <button className="btn btn-primary" onClick={openCreateModal}>
           <Plus size={18} />
-          Tài nguyên mới
+          Sản phẩm mới
         </button>
       </div>
 
       {resources.length === 0 ? (
         <div className="empty-state card">
           <Package size={64} className="empty-state-icon" />
-          <h3 className="empty-state-title">Chưa có tài nguyên</h3>
+          <h3 className="empty-state-title">Chưa có sản phẩm</h3>
           <p className="empty-state-text">
-            Tạo tài nguyên đầu tiên trong gian hàng này.
+            Tạo sản phẩm đầu tiên trong gian hàng này.
           </p>
           <button className="btn btn-primary mt-4" onClick={openCreateModal}>
             <Plus size={18} />
-            Tạo tài nguyên
+            Tạo sản phẩm
           </button>
         </div>
       ) : (
@@ -263,7 +263,7 @@ export function CategoryDetailPage() {
                       <button
                         className="btn btn-ghost btn-sm"
                         onClick={() => {
-                          if (window.confirm("Bạn có chắc muốn xóa tài nguyên này?")) {
+                          if (window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) {
                             deleteMutation.mutate(resource.id);
                           }
                         }}
@@ -285,7 +285,7 @@ export function CategoryDetailPage() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">
-                {editingResource ? "Sửa tài nguyên" : "Tạo tài nguyên"}
+                {editingResource ? "Sửa sản phẩm" : "Tạo sản phẩm"}
               </h2>
               <button className="modal-close" onClick={closeModal}>
                 <X size={20} />
