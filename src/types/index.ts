@@ -113,6 +113,8 @@ export interface Resource {
   description?: string | null;
   price: number;
   is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ResourceCreate {

@@ -14,8 +14,9 @@ import { useState } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { shopsApi } from "../../api";
+import { BackButton } from "../BackButton/BackButton";
 import { useAuthStore, useThemeStore } from "../../store";
-import "./Sidebar.css"; // Reuse existing styles or create new ones
+import "./Sidebar.css"; 
 
 export function ShopSidebar() {
     const { shopId } = useParams<{ shopId: string }>();
@@ -35,7 +36,6 @@ export function ShopSidebar() {
     const navItems = [
         { path: `/shops/${shopId}/overview`, icon: BarChart3, label: "Tổng quan" },
         { path: `/shops/${shopId}/categories`, icon: Folder, label: "Gian hàng" },
-        // { path: `/shops/${shopId}/resources`, icon: Package, label: "Sản phẩm" },
         { path: `/shops/${shopId}/settings`, icon: CreditCard, label: "Cấu hình & Thanh toán" },
         { path: `/shops/${shopId}/orders`, icon: ShoppingBag, label: "Đơn hàng" },
     ];
@@ -47,8 +47,9 @@ export function ShopSidebar() {
 
     return (
         <aside className="sidebar">
-            {/* Shop Switcher Header */}
-            <div className="sidebar-header">
+            <div className="sidebar-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
+                <BackButton to="/shops" label="DS Cửa hàng" className="w-full justify-start pl-0 text-sm mb-2" />
+                
                 <div
                     className="shop-switcher"
                     onClick={() => setIsShopSwitcherOpen(!isShopSwitcherOpen)}

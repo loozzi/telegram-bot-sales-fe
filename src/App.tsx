@@ -18,7 +18,7 @@ import { ShopResources } from './pages/shop-detail/tabs/ShopResources';
 import { ShopSettings } from './pages/shop-detail/tabs/ShopSettings';
 import { ShopOrders } from './pages/shop-detail/tabs/ShopOrders';
 
-import { CategoryDetailPage } from './pages/category-detail';
+
 import { ResourceDetailPage } from './pages/resource-detail';
 
 const queryClient = new QueryClient({
@@ -101,7 +101,6 @@ function App() {
             <Route path="orders" element={<ShopOrders />} />
 
             {/* Detail pages for items within a shop */}
-            <Route path="categories/:categoryId" element={<CategoryDetailPage />} />
             <Route path="resources/:resourceId" element={<ResourceDetailPage />} />
           </Route>
 

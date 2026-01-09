@@ -1,202 +1,461 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit2, Folder, Plus, Trash2 } from "lucide-react";
+import { Edit2, Folder, Plus, Trash2, X, Package, Eye } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
-import { categoriesApi } from "../../../api";
-import type { Category, CategoryCreate, CategoryUpdate } from "../../../types";
+import { categoriesApi, resourcesApi } from "../../../api";
+import type { Category, CategoryCreate, CategoryUpdate, Resource, ResourceCreate } from "../../../types";
 import "../ShopDetail.css";
 
+// --- Schemas ---
 const categorySchema = z.object({
-    name: z.string().min(1, "Tên là bắt buộc").max(100),
-    description: z.string().max(500).optional(),
+  name: z.string().min(1, "Tên là bắt buộc").max(100),
+  description: z.string().max(500).optional(),
+});
+
+const resourceSchema = z.object({
+  shop_id: z.string(),
+  name: z.string().min(1, "Tên là bắt buộc").max(100),
+  category_id: z.string().optional(),
+  description: z.string().max(500).optional(),
+  price: z.number().min(0, "Giá phải là số dương"),
+  is_active: z.boolean().optional(),
 });
 
 type CategoryForm = z.infer<typeof categorySchema>;
+type ResourceForm = z.infer<typeof resourceSchema>;
 
 export function ShopCategories() {
-    const { shopId } = useParams<{ shopId: string }>();
-    const navigate = useNavigate();
-    const queryClient = useQueryClient();
-    const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const { shopId } = useParams<{ shopId: string }>();
+  // navigate unused, but kept if needed for deep links later or removed if strictly modal
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-    const { data: categoriesData } = useQuery({
-        queryKey: ["categories", shopId],
-        queryFn: () => categoriesApi.list(shopId!),
-        enabled: !!shopId,
-    });
+  // --- State ---
+  // Category CRUD
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
-    const categories = categoriesData?.items || [];
+  // Category Details (Product List)
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
-    const categoryForm = useForm<CategoryForm>({
-        resolver: zodResolver(categorySchema),
-    });
+  // Resource CRUD
+  const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
+  const [editingResource, setEditingResource] = useState<Resource | null>(null);
 
-    const createCategoryMutation = useMutation({
-        mutationFn: (data: CategoryCreate) => categoriesApi.create(data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["categories", shopId] });
-            toast.success("Tạo gian hàng thành công!");
-            setIsCategoryModalOpen(false);
-            categoryForm.reset();
-        },
-        onError: () => toast.error("Tạo gian hàng thất bại"),
-    });
+  // --- Queries ---
+  const { data: categoriesData } = useQuery({
+    queryKey: ["categories", shopId],
+    queryFn: () => categoriesApi.list(shopId!),
+    enabled: !!shopId,
+  });
 
-    const updateCategoryMutation = useMutation({
-        mutationFn: ({ id, data }: { id: string; data: CategoryUpdate }) =>
-            categoriesApi.update(id, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["categories", shopId] });
-            toast.success("Cập nhật gian hàng thành công!");
-            setEditingCategory(null);
-            setIsCategoryModalOpen(false);
-        },
-        onError: () => toast.error("Cập nhật gian hàng thất bại"),
-    });
+  const categories = categoriesData?.items || [];
 
-    // Modal Component (inline for simplicity, or could be extracted)
-    const CategoryModal = () => (
-        isCategoryModalOpen && (
-            <div className="modal-overlay">
-                <div className="modal-content">
-                    <h2 className="modal-title">
-                        {editingCategory ? "Chỉnh sửa gian hàng" : "Thêm gian hàng mới"}
-                    </h2>
-                    <form
-                        onSubmit={categoryForm.handleSubmit((data) => {
-                            if (editingCategory) {
-                                updateCategoryMutation.mutate({
-                                    id: editingCategory.id,
-                                    data: { ...data },
-                                });
-                            } else {
-                                createCategoryMutation.mutate({ ...data, shop_id: shopId! });
-                            }
-                        })}
-                    >
-                        <div className="form-group">
-                            <label>Tên gian hàng</label>
-                            <input
-                                {...categoryForm.register("name")}
-                                className="form-input"
-                                placeholder="Ví dụ: Netflix, Spotify..."
-                            />
-                            {categoryForm.formState.errors.name && (
-                                <span className="form-error">
-                                    {categoryForm.formState.errors.name.message}
-                                </span>
-                            )}
-                        </div>
-                        <div className="form-group">
-                            <label>Mô tả</label>
-                            <textarea
-                                {...categoryForm.register("description")}
-                                className="form-textarea"
-                                placeholder="Mô tả ngắn về gian hàng..."
-                            />
-                            {categoryForm.formState.errors.description && (
-                                <span className="form-error">
-                                    {categoryForm.formState.errors.description.message}
-                                </span>
-                            )}
-                        </div>
-                        <div className="modal-actions">
-                            <button
-                                type="button"
-                                className="btn btn-ghost"
-                                onClick={() => setIsCategoryModalOpen(false)}
-                            >
-                                Hủy
-                            </button>
-                            <button type="submit" className="btn btn-primary">
-                                {editingCategory ? "Cập nhật" : "Tạo mới"}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+  const { data: resourcesData } = useQuery({
+    queryKey: ["resources", shopId, selectedCategory?.id],
+    queryFn: async () => {
+      if (!selectedCategory?.id) return { items: [] };
+      const res = await categoriesApi.get(selectedCategory.id);
+      return { items: res?.data?.resources || [] };
+    },
+    enabled: !!selectedCategory?.id,
+  });
+
+  // Sort resources by created_at descending (newest first)
+  // No sort, display as response
+  const resources = resourcesData?.items || [];
+
+  // --- Forms ---
+  const categoryForm = useForm<CategoryForm>({
+    resolver: zodResolver(categorySchema),
+  });
+
+  const resourceForm = useForm<ResourceForm>({
+    resolver: zodResolver(resourceSchema),
+  });
+
+  // --- Mutations (Categories) ---
+  const createCategoryMutation = useMutation({
+    mutationFn: (data: CategoryCreate) => categoriesApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories", shopId] });
+      toast.success("Tạo gian hàng thành công!");
+      setIsCategoryModalOpen(false);
+      categoryForm.reset();
+    },
+    onError: () => toast.error("Tạo gian hàng thất bại"),
+  });
+
+  const updateCategoryMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: CategoryUpdate }) =>
+      categoriesApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories", shopId] });
+      toast.success("Cập nhật gian hàng thành công!");
+      setEditingCategory(null);
+      setIsCategoryModalOpen(false);
+    },
+    onError: () => toast.error("Cập nhật gian hàng thất bại"),
+  });
+
+  // --- Mutations (Resources) ---
+  const createResourceMutation = useMutation({
+    mutationFn: (data: ResourceCreate) => resourcesApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["resources", shopId, selectedCategory?.id] });
+      toast.success("Tạo sản phẩm thành công!");
+      setIsResourceModalOpen(false);
+      resourceForm.reset();
+    },
+    onError: () => toast.error("Tạo sản phẩm thất bại"),
+  });
+
+  const updateResourceMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<ResourceCreate> }) => {
+       const payload = { ...data, category_id: data.category_id || null };
+       return resourcesApi.update(id, payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["resources", shopId, selectedCategory?.id] });
+      toast.success("Cập nhật sản phẩm thành công!");
+      setEditingResource(null);
+      setIsResourceModalOpen(false);
+    },
+    onError: () => toast.error("Cập nhật sản phẩm thất bại"),
+  });
+
+  const deleteResourceMutation = useMutation({
+      mutationFn: (id: string) => resourcesApi.delete(id),
+      onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["resources", shopId, selectedCategory?.id] });
+          toast.success("Xóa sản phẩm thành công!");
+      },
+      onError: () => toast.error("Xóa thất bại"),
+  });
+
+  const toggleResourceStatusMutation = useMutation({
+      mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
+          resourcesApi.updateStatus(id, is_active),
+      onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["resources", shopId, selectedCategory?.id] });
+          toast.success("Cập nhật trạng thái thành công!");
+      },
+      onError: () => toast.error("Cập nhật thất bại"),
+  });
+
+
+  // --- Handlers ---
+  const openCategoryModal = (category?: Category) => {
+    if (category) {
+      setEditingCategory(category);
+      categoryForm.reset({ name: category.name, description: category.description || "" });
+    } else {
+      setEditingCategory(null);
+      categoryForm.reset({ name: "", description: "" });
+    }
+    setIsCategoryModalOpen(true);
+  };
+
+  const openResourceModal = (resource?: Resource) => {
+    if (resource) {
+      setEditingResource(resource);
+      resourceForm.reset({
+        shop_id: resource.shop_id,
+        category_id: resource.category_id || selectedCategory?.id || "",
+        name: resource.name,
+        description: resource.description || "",
+        price: resource.price,
+        is_active: resource.is_active,
+      });
+    } else {
+      setEditingResource(null);
+      resourceForm.reset({
+        shop_id: shopId!,
+        category_id: selectedCategory?.id,
+        name: "",
+        description: "",
+        price: 0,
+        is_active: true,
+      });
+    }
+    setIsResourceModalOpen(true);
+  };
+
+
+  // --- Modals ---
+  const Modals = () => (
+    <>
+      {/* Category CRUD Modal */}
+      {isCategoryModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsCategoryModalOpen(false)}>
+          <div className="modal text-left" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">
+                {editingCategory ? "Chỉnh sửa gian hàng" : "Thêm gian hàng mới"}
+              </h2>
+              <button className="modal-close" onClick={() => setIsCategoryModalOpen(false)}>
+                <X size={20} />
+              </button>
             </div>
-        )
-    );
-
-    return (
-        <div className="categories-tab animate-fadeIn">
-            <div className="tab-header">
-                <h2>Gian hàng</h2>
-                <button
-                    className="btn btn-primary"
-                    onClick={() => {
-                        setEditingCategory(null);
-                        categoryForm.reset({ name: "", description: "" });
-                        setIsCategoryModalOpen(true);
-                    }}
-                >
-                    <Plus size={18} />
-                    Gian hàng mới
+            <form
+              onSubmit={categoryForm.handleSubmit((data) => {
+                if (editingCategory) {
+                  updateCategoryMutation.mutate({ id: editingCategory.id, data: { ...data } });
+                } else {
+                  createCategoryMutation.mutate({ ...data, shop_id: shopId! });
+                }
+              })}
+            >
+              <div className="modal-body">
+                <div className="form-group">
+                  <label className="form-label">Tên gian hàng</label>
+                  <input
+                    {...categoryForm.register("name")}
+                    className="form-input"
+                    placeholder="Ví dụ: Netflix, Spotify..."
+                  />
+                   {categoryForm.formState.errors.name && (
+                    <span className="form-error">{categoryForm.formState.errors.name.message}</span>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Mô tả</label>
+                  <textarea
+                    {...categoryForm.register("description")}
+                    className="form-textarea"
+                    placeholder="Mô tả ngắn về gian hàng..."
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setIsCategoryModalOpen(false)}>
+                  Hủy
                 </button>
+                <button type="submit" className="btn btn-primary" disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}>
+                  {editingCategory ? "Cập nhật" : "Tạo mới"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Category Details (Resources List) Modal */}
+      {selectedCategory && !isResourceModalOpen && (
+        <div className="modal-overlay" onClick={() => setSelectedCategory(null)}>
+          <div className="modal modal-lg text-left" onClick={(e) => e.stopPropagation()}>
+             <div className="modal-header">
+              <div>
+                  <h2 className="modal-title">{selectedCategory.name}</h2>
+                  {selectedCategory.description && <p className="text-sm text-secondary">{selectedCategory.description}</p>}
+              </div>
+              <button className="modal-close" onClick={() => setSelectedCategory(null)}>
+                <X size={20} />
+              </button>
             </div>
-            {categories.length === 0 ? (
-                <div className="empty-state card">
-                    <Folder size={48} className="empty-state-icon" />
-                    <h3 className="empty-state-title">Chưa có gian hàng</h3>
-                    <p className="empty-state-text">
-                        Tạo gian hàng để phân loại sản phẩm của bạn.
-                    </p>
+            <div className="modal-body">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="section-title">Danh sách sản phẩm</h3>
+                    <button className="btn btn-primary btn-sm" onClick={() => openResourceModal()}>
+                        <Plus size={16} /> Thêm sản phẩm
+                    </button>
                 </div>
-            ) : (
-                <div className="table-container card">
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th>Tên gian hàng</th>
-                                <th>Mô tả</th>
-                                <th style={{ width: 120 }}>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {categories.map((category) => (
-                                <tr
-                                    key={category.id}
-                                    className="clickable-row"
-                                    onClick={() =>
-                                        navigate(`/shops/${shopId}/categories/${category.id}`)
-                                    }
-                                >
-                                    <td className="font-medium">{category.name}</td>
-                                    <td className="text-secondary truncate">
-                                        {category.description || "-"}
-                                    </td>
-                                    <td onClick={(e) => e.stopPropagation()}>
-                                        <div className="flex gap-2">
-                                            <button
-                                                className="btn btn-ghost btn-sm"
-                                                onClick={() => {
-                                                    categoryForm.reset({
-                                                        name: category.name,
-                                                        description: category.description || "",
-                                                    });
-                                                    setEditingCategory(category);
-                                                    setIsCategoryModalOpen(true);
+
+                 {resources.length === 0 ? (
+                    <div className="empty-state py-8">
+                        <Package size={48} className="empty-state-icon mx-auto mb-2 opacity-50" />
+                        <p className="text-center text-secondary">Chưa có sản phẩm nào trong gian hàng này.</p>
+                    </div>
+                 ) : (
+                    <div className="table-container">
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th>Tên</th>
+                                    <th>Giá</th>
+                                    <th>Trạng thái</th>
+                                    <th style={{width: 100}}></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {resources.map((res: any) => (
+                                    <tr key={res.id} className="hover:bg-base-200">
+                                        <td>
+                                            <div className="font-medium">{res.name}</div>
+                                            <div className="text-xs text-secondary truncate max-w-[200px]">{res.description}</div>
+                                        </td>
+                                        <td>{res.price?.toLocaleString()} đ</td>
+                                        <td>
+                                            <div
+                                                className={`badge border-none outline-none cursor-pointer tooltip ${res.is_active ? "badge-success" : "badge-error"}`}
+                                                data-tip={res.is_active ? "Click để tắt" : "Click để bật"}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleResourceStatusMutation.mutate({ id: res.id, is_active: !res.is_active });
                                                 }}
                                             >
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button className="btn btn-ghost btn-sm">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-            <CategoryModal />
+                                                {res.is_active ? "Đang hoạt động" : "Đang tắt"}
+                                            </div>
+                                        </td>
+                                        <td onClick={(e) => e.stopPropagation()}>
+                                             <div className="flex gap-2 justify-end">
+                                                <button 
+                                                    className="btn btn-ghost btn-sm tooltip" 
+                                                    data-tip="Xem chi tiết"
+                                                    onClick={() => navigate(`/shops/${shopId}/resources/${res.id}`)}
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
+                                                <button 
+                                                    className="btn btn-ghost btn-sm tooltip" 
+                                                    data-tip="Chỉnh sửa"
+                                                    onClick={() => openResourceModal(res)}
+                                                >
+                                                    <Edit2 size={16} />
+                                                </button>
+                                                <button 
+                                                    className="btn btn-ghost btn-sm text-error tooltip" 
+                                                    data-tip="Xóa sản phẩm"
+                                                    onClick={() => {
+                                                        if(window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
+                                                            deleteResourceMutation.mutate(res.id);
+                                                        }
+                                                    }}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                 )}
+            </div>
+             <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setSelectedCategory(null)}>Đóng</button>
+            </div>
+          </div>
         </div>
-    );
+      )}
+
+      {/* Resource CRUD Modal */}
+      {isResourceModalOpen && (
+          <div className="modal-overlay" onClick={() => setIsResourceModalOpen(false)}>
+               <div className="modal text-left" onClick={(e) => e.stopPropagation()}>
+                   <div className="modal-header">
+                      <h2 className="modal-title">
+                        {editingResource ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
+                      </h2>
+                      <button className="modal-close" onClick={() => setIsResourceModalOpen(false)}>
+                        <X size={20} />
+                      </button>
+                    </div>
+                     <form onSubmit={resourceForm.handleSubmit((data) => {
+                         if (editingResource) {
+                             updateResourceMutation.mutate({ id: editingResource.id, data });
+                         } else {
+                             createResourceMutation.mutate(data);
+                         }
+                     })}>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label className="form-label">Tên sản phẩm</label>
+                                <input {...resourceForm.register("name")} className="form-input" />
+                                {resourceForm.formState.errors.name && <span className="form-error">{resourceForm.formState.errors.name.message}</span>}
+                            </div>
+                             <div className="form-group">
+                                <label className="form-label">Mô tả</label>
+                                <textarea {...resourceForm.register("description")} className="form-textarea" rows={3} />
+                            </div>
+                             <div className="form-group">
+                                <label className="form-label">Giá</label>
+                                <input type="number" {...resourceForm.register("price", {valueAsNumber: true})} className="form-input" />
+                                 {resourceForm.formState.errors.price && <span className="form-error">{resourceForm.formState.errors.price.message}</span>}
+                            </div>
+                             <div className="form-group">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" {...resourceForm.register("is_active")} />
+                                    <span>Hoạt động</span>
+                                </label>
+                            </div>
+                             <input type="hidden" {...resourceForm.register("category_id")} />
+                             <input type="hidden" {...resourceForm.register("shop_id")} />
+                        </div>
+                         <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={() => setIsResourceModalOpen(false)}>Hủy</button>
+                            <button type="submit" className="btn btn-primary" disabled={createResourceMutation.isPending || updateResourceMutation.isPending}>
+                                {editingResource ? "Cập nhật" : "Tạo mới"}
+                            </button>
+                        </div>
+                     </form>
+               </div>
+          </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className="categories-tab animate-fadeIn">
+      <div className="tab-header">
+        <h2>Gian hàng</h2>
+        <button className="btn btn-primary" onClick={() => openCategoryModal()}>
+          <Plus size={18} />
+          Gian hàng mới
+        </button>
+      </div>
+
+      {categories.length === 0 ? (
+        <div className="empty-state card">
+          <Folder size={48} className="empty-state-icon" />
+          <h3 className="empty-state-title">Chưa có gian hàng</h3>
+          <p className="empty-state-text">
+            Tạo gian hàng để phân loại sản phẩm của bạn.
+          </p>
+        </div>
+      ) : (
+        <div className="table-container card">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Tên gian hàng</th>
+                <th>Mô tả</th>
+                <th style={{ width: 120 }}>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories.map((category) => (
+                <tr
+                  key={category.id}
+                  className="clickable-row"
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  <td className="font-medium">{category.name}</td>
+                  <td className="text-secondary truncate">
+                    {category.description || "-"}
+                  </td>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <div className="flex gap-2">
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => openCategoryModal(category)}
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <Modals />
+    </div>
+  );
 }

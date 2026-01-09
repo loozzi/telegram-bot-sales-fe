@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast from "react-hot-toast";
 import { categoriesApi, resourcesApi, shopsApi } from "../../api";
-import { Breadcrumb } from "../../components/Breadcrumb";
+import { BackButton } from "../../components/BackButton/BackButton";
 import type { Resource, ResourceCreate } from "../../types";
 import "./CategoryDetail.css";
 
@@ -174,15 +174,9 @@ export function CategoryDetailPage() {
     );
   }
 
-  const breadcrumbItems = [
-    { label: "Cửa hàng", path: "/shops" },
-    { label: shop.name, path: `/shops/${shopId}` },
-    { label: category.name },
-  ];
-
   return (
     <div className="category-detail-page animate-fadeIn">
-      <Breadcrumb items={breadcrumbItems} />
+      <BackButton to={`/shops/${shopId}`} label="Quay lại cửa hàng" />
 
       <div className="page-header flex justify-between items-center">
         <div>

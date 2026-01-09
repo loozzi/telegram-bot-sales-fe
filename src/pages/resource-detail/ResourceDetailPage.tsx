@@ -20,7 +20,7 @@ import { categoriesApi } from "../../api/categories";
 import { inventoriesApi } from "../../api/inventories";
 import { resourcesApi } from "../../api/resources";
 import { shopsApi } from "../../api/shops";
-import { Breadcrumb } from "../../components/Breadcrumb";
+import { BackButton } from "../../components/BackButton/BackButton";
 import type { Inventory, ResourceUpdate } from "../../types";
 import "./ResourceDetail.css";
 
@@ -215,23 +215,12 @@ export function ResourceDetailPage() {
     );
   }
 
-  const breadcrumbItems = [
-    { label: "Cửa hàng", path: "/shops" },
-    { label: shop.name, path: `/shops/${shopId}` },
-    ...(resource.category
-      ? [
-          {
-            label: resource.category.name,
-            path: `/shops/${shopId}/categories/${resource.category_id}`,
-          },
-        ]
-      : []),
-    { label: resource.name },
-  ];
-
   return (
     <div className="resource-detail-page animate-fadeIn">
-      <Breadcrumb items={breadcrumbItems} />
+      <BackButton 
+        to={resource.category_id ? `/shops/${shopId}/categories/${resource.category_id}` : `/shops/${shopId}`} 
+        label="Quay lại" 
+      />
 
       {/* Resource Header */}
       <div className="resource-header card">
