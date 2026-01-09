@@ -1,14 +1,165 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CreditCard, Edit2, Eye, EyeOff, Plus, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
+import { CreditCard, Edit2, Eye, EyeOff, Plus, Store, ToggleLeft, ToggleRight, Trash2, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
 import { z } from "zod";
-import { paymentsApi } from "../../../api";
-import type { BankType, Payment, PaymentCreate, PaymentStatus } from "../../../types";
+import { paymentsApi, shopsApi } from "../../../api";
+import type { BankType, Payment, PaymentCreate, PaymentStatus, ShopUpdate } from "../../../types";
 import "../ShopDetail.css";
+
+// ==========================================
+// General Settings Tab
+// ==========================================
+
+const generalSettingsSchema = z.object({
+    name: z.string().min(1, "Tên shop là bắt buộc"),
+    description: z.string().optional(),
+    support_channel: z.string().optional(),
+    support_group: z.string().optional(),
+    policy: z.string().optional(),
+    bot_token: z.string().min(1, "Bot token là bắt buộc"),
+});
+
+type GeneralSettingsForm = z.infer<typeof generalSettingsSchema>;
+
+function GeneralSettingsTab({ shopId }: { shopId: string }) {
+    const queryClient = useQueryClient();
+    const [showBotToken, setShowBotToken] = useState(false);
+
+    const { data: shopResponse, isLoading } = useQuery({
+        queryKey: ["shop", shopId],
+        queryFn: () => shopsApi.get(shopId!),
+        enabled: !!shopId,
+    });
+
+    const shop = shopResponse?.data;
+
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<GeneralSettingsForm>({
+        resolver: zodResolver(generalSettingsSchema),
+    });
+
+    useEffect(() => {
+        if (shop) {
+            reset({
+                name: shop.name,
+                description: shop.description || "",
+                support_channel: shop.support_channel || "",
+                support_group: shop.support_group || "",
+                policy: shop.policy || "",
+                bot_token: shop.bot_token,
+            });
+        }
+    }, [shop, reset]);
+
+    const updateShopMutation = useMutation({
+        mutationFn: (data: ShopUpdate) => shopsApi.update(shopId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["shop", shopId] });
+            toast.success("Cập nhật thông tin shop thành công!");
+        },
+        onError: () => toast.error("Cập nhật thất bại"),
+    });
+
+    if (isLoading) return <div className="p-8 text-center">Đang tải thông tin...</div>;
+
+    const onSubmit = (data: GeneralSettingsForm) => {
+        updateShopMutation.mutate(data);
+    };
+
+    return (
+        <div className="card max-w-4xl mx-auto animate-fadeIn">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div className="form-group">
+                    <label className="font-semibold block mb-2">Tên Shop</label>
+                    <input
+                        {...register("name")}
+                        className="form-input w-full p-2 border rounded"
+                        placeholder="Nhập tên shop"
+                    />
+                    {errors.name && <span className="text-red-500 text-sm mt-1">{errors.name.message}</span>}
+                </div>
+
+                <div className="form-group">
+                    <label className="font-semibold block mb-2">Mô tả</label>
+                    <textarea
+                        {...register("description")}
+                        className="form-input w-full p-2 border rounded min-h-[100px]"
+                        placeholder="Mô tả về shop của bạn..."
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="form-group">
+                        <label className="font-semibold block mb-2">Kênh hỗ trợ (Channel)</label>
+                        <input
+                            {...register("support_channel")}
+                            className="form-input w-full p-2 border rounded"
+                            placeholder="@username hoặc link"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="font-semibold block mb-2">Nhóm hỗ trợ (Group)</label>
+                        <input
+                            {...register("support_group")}
+                            className="form-input w-full p-2 border rounded"
+                            placeholder="@username hoặc link"
+                        />
+                    </div>
+                </div>
+
+                <div className="form-group">
+                    <label className="font-semibold block mb-2">Chính sách bảo hành / Nội quy</label>
+                    <textarea
+                        {...register("policy")}
+                        className="form-input w-full p-2 border rounded min-h-[150px]"
+                        placeholder="Chính sách bảo hành, hoàn tiền..."
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label className="font-semibold block mb-2">Bot Token</label>
+                    <div className="password-input-wrapper">
+                        <input
+                            {...register("bot_token")}
+                            type={showBotToken ? "text" : "password"}
+                            className="form-input w-full p-2 border rounded"
+                            placeholder="Telegram Bot Token"
+                        />
+                        <button
+                            type="button"
+                            className="password-toggle-btn"
+                            onClick={() => setShowBotToken(!showBotToken)}
+                        >
+                            {showBotToken ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                    </div>
+                    {errors.bot_token && <span className="text-red-500 text-sm mt-1">{errors.bot_token.message}</span>}
+                    <p className="text-sm text-gray-500 mt-1">
+                        Token của bot Telegram được dùng để vận hành shop tự động.
+                    </p>
+                </div>
+
+                <div className="pt-4 border-t flex justify-end">
+                    <button
+                        type="submit"
+                        disabled={updateShopMutation.isPending}
+                        className="btn btn-primary px-6 py-2"
+                    >
+                        {updateShopMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+// ==========================================
+// Payment Settings Tab
+// ==========================================
 
 const paymentSchema = z.object({
     bank_type: z.string().min(1, 'Vui lòng chọn ngân hàng'),
@@ -35,8 +186,7 @@ const BANK_OPTIONS: { value: BankType; label: string }[] = [
     { value: 'vab', label: 'VietABank' },
 ];
 
-export function ShopSettings() {
-    const { shopId } = useParams<{ shopId: string }>();
+function PaymentSettingsTab({ shopId }: { shopId: string }) {
     const queryClient = useQueryClient();
 
     // Payment State
@@ -44,12 +194,36 @@ export function ShopSettings() {
     const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
     const [deletingPayment, setDeletingPayment] = useState<Payment | null>(null);
     const [showTokenId, setShowTokenId] = useState<string | null>(null);
+    const [fetchedTokens, setFetchedTokens] = useState<Record<string, string>>({});
 
     const { data: paymentsData } = useQuery({
         queryKey: ["payments", shopId],
         queryFn: () => paymentsApi.list(shopId!),
         enabled: !!shopId,
     });
+
+    const getTokenMutation = useMutation({
+        mutationFn: (paymentId: string) => paymentsApi.get(shopId!, paymentId),
+        onSuccess: (data, variables) => {
+            const token = data.data?.token || "";
+            setFetchedTokens(prev => ({ ...prev, [variables]: token }));
+            setShowTokenId(variables);
+        },
+        onError: () => toast.error("Không thể lấy token")
+    });
+
+    const handleViewToken = (paymentId: string) => {
+        if (showTokenId === paymentId) {
+            setShowTokenId(null);
+            return;
+        }
+
+        if (fetchedTokens[paymentId]) {
+            setShowTokenId(paymentId);
+        } else {
+            getTokenMutation.mutate(paymentId);
+        }
+    };
 
     const payments = paymentsData?.items || [];
 
@@ -210,7 +384,7 @@ export function ShopSettings() {
     );
 
     return (
-        <div className="settings-tab animate-fadeIn">
+        <div className="animate-fadeIn">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="section-title">Phương thức thanh toán</h2>
                 <button
@@ -278,11 +452,19 @@ export function ShopSettings() {
                                 <div className="flex justify-between text-sm items-center">
                                     <span className="text-secondary">Token:</span>
                                     <div className="flex items-center gap-2">
-                                        <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">
-                                            {showTokenId === payment.id ? "••••••••" : "••••••••"}
+                                        <code className="token-display">
+                                            {showTokenId === payment.id ? (fetchedTokens[payment.id] || "••••••••") : "••••••••"}
                                         </code>
-                                        <button className="text-secondary hover:text-primary" onClick={() => setShowTokenId(showTokenId === payment.id ? null : payment.id)}>
-                                            {showTokenId === payment.id ? <EyeOff size={14} /> : <Eye size={14} />}
+                                        <button 
+                                            className="border-none outline-none p-2" 
+                                            onClick={() => handleViewToken(payment.id)}
+                                            disabled={getTokenMutation.isPending && !fetchedTokens[payment.id]}
+                                        >
+                                            {getTokenMutation.isPending && !fetchedTokens[payment.id] && showTokenId !== payment.id ? (
+                                                <span className="spinner" style={{ width: 14, height: 14}} />
+                                            ) : (
+                                                showTokenId === payment.id ? <EyeOff size={14} /> : <Eye size={14} />
+                                            )}
                                         </button>
                                     </div>
                                 </div>
@@ -348,6 +530,48 @@ export function ShopSettings() {
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+// ==========================================
+// Main Component
+// ==========================================
+
+export function ShopSettings() {
+    const { shopId } = useParams<{ shopId: string }>();
+    const [activeTab, setActiveTab] = useState<'general' | 'payment'>('general');
+
+    if (!shopId) return null;
+
+    return (
+        <div className="settings-page">
+            <div className="tabs-container">
+                <div className="tabs">
+                    <button
+                        className={`tab ${activeTab === 'general' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('general')}
+                    >
+                        <Store size={18} />
+                        Thông tin shop
+                    </button>
+                    <button
+                        className={`tab ${activeTab === 'payment' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('payment')}
+                    >
+                        <Wallet size={18} />
+                        Thanh toán
+                    </button>
+                </div>
+            </div>
+
+            <div className="tab-content py-4">
+                {activeTab === 'general' ? (
+                    <GeneralSettingsTab shopId={shopId} />
+                ) : (
+                    <PaymentSettingsTab shopId={shopId} />
+                )}
+            </div>
         </div>
     );
 }

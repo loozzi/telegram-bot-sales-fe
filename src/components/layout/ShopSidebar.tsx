@@ -2,10 +2,10 @@ import {
     BarChart3,
     ChevronDown,
     ChevronRight,
-    CreditCard,
     Folder,
     LogOut,
     Moon,
+    Settings,
     ShoppingBag,
     Store,
     Sun
@@ -35,8 +35,8 @@ export function ShopSidebar() {
     const navItems = [
         { path: `/shops/${shopId}/overview`, icon: BarChart3, label: "Tổng quan" },
         { path: `/shops/${shopId}/categories`, icon: Folder, label: "Gian hàng" },
-        { path: `/shops/${shopId}/settings`, icon: CreditCard, label: "Cấu hình & Thanh toán" },
         { path: `/shops/${shopId}/orders`, icon: ShoppingBag, label: "Đơn hàng" },
+        { path: `/shops/${shopId}/settings`, icon: Settings, label: "Cấu hình" },
     ];
 
     const handleLogout = () => {
