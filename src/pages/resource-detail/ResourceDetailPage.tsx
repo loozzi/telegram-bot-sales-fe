@@ -16,7 +16,6 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
-import { categoriesApi } from "../../api/categories";
 import { inventoriesApi } from "../../api/inventories";
 import { resourcesApi } from "../../api/resources";
 import { shopsApi } from "../../api/shops";
@@ -62,12 +61,6 @@ export function ResourceDetailPage() {
     queryKey: ["resource", resourceId],
     queryFn: () => resourcesApi.get(resourceId!),
     enabled: !!resourceId,
-  });
-
-  const { data: categoriesData } = useQuery({
-    queryKey: ["categories", shopId],
-    queryFn: () => categoriesApi.list(shopId!),
-    enabled: !!shopId,
   });
 
   const { data: inventoriesData } = useQuery({
@@ -148,7 +141,6 @@ export function ResourceDetailPage() {
   // Derived Data
   const shop = shopData?.data;
   const resource = resourceData?.data;
-  const categories = categoriesData?.items || [];
   const inventories = inventoriesData?.items || [];
   const soldCount = inventories.filter((i) => i.is_sold).length;
   const availableCount = inventories.length - soldCount;
