@@ -360,8 +360,8 @@ export function ResourceDetailPage() {
                       onChange={(e) => handleSelectAll(e.target.checked)}
                     />
                   </th>
-                  <th>Nội dung</th>
-                  <th style={{ width: 120 }}>Trạng thái</th>
+                  <th>Sản phẩm</th>
+                  <th style={{ width: 140 }}>Trạng thái</th>
                   <th style={{ width: 80 }}>Hành động</th>
                 </tr>
               </thead>
@@ -382,7 +382,7 @@ export function ResourceDetailPage() {
                     </td>
                     <td>
                       <button
-                        className={`status-toggle ${
+                        className={`status-toggle gap-2 ${
                           item.is_sold ? "sold" : "available"
                         }`}
                         onClick={() =>
@@ -394,11 +394,11 @@ export function ResourceDetailPage() {
                       >
                          {item.is_sold ? (
                           <>
-                            <Check size={14} className="mr-1" /> Đã bán
+                            <Check size={14} className="mr-2" /> Đã bán
                           </>
                         ) : (
                           <>
-                            <Boxes size={14} className="mr-1" /> Có sẵn
+                            <Boxes size={14} className="mr-2" /> Đang bán
                           </>
                         )}
                       </button>
@@ -407,6 +407,7 @@ export function ResourceDetailPage() {
                       <button
                         className="btn btn-ghost btn-sm"
                         onClick={() => setDeletingInventory(item)}
+                        disabled={item.is_sold} 
                       >
                         <Trash2 size={16} />
                       </button>
@@ -442,7 +443,7 @@ export function ResourceDetailPage() {
                     <span className="form-error">{resourceForm.formState.errors.name.message}</span>
                   )}
                 </div>
-                <div className="form-group">
+                {/* <div className="form-group">
                   <label className="form-label">Gian hàng</label>
                   <select
                     className="form-input"
@@ -455,7 +456,7 @@ export function ResourceDetailPage() {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
                 <div className="form-group">
                   <label className="form-label">Giá</label>
                   <input
@@ -473,6 +474,7 @@ export function ResourceDetailPage() {
                     className="form-input"
                     rows={3}
                     {...resourceForm.register("description")}
+                    placeholder="Nhập mô tả"  
                   />
                 </div>
                 <div className="form-group">
