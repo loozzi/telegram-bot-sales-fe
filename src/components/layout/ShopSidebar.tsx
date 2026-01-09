@@ -14,7 +14,6 @@ import { useState } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { shopsApi } from "../../api";
-import { BackButton } from "../BackButton/BackButton";
 import { useAuthStore, useThemeStore } from "../../store";
 import "./Sidebar.css"; 
 
@@ -48,8 +47,7 @@ export function ShopSidebar() {
     return (
         <aside className="sidebar">
             <div className="sidebar-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
-                <BackButton to="/shops" label="DS Cửa hàng" className="w-full justify-start pl-0 text-sm mb-2" />
-                
+
                 <div
                     className="shop-switcher"
                     onClick={() => setIsShopSwitcherOpen(!isShopSwitcherOpen)}

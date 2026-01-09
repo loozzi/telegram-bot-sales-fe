@@ -22,7 +22,7 @@ export function BackButton({ to, label = "Quay lại", className = "" }: BackBut
         <button
             onClick={handleClick}
             className={`btn btn-ghost flex items-center gap-2 text-secondary hover:text-primary transition-colors ${className}`}
-            style={{ paddingLeft: 0, marginBottom: '1rem' }}
+            style={{ marginBottom: '1rem' }}
         >
             <ArrowLeft size={20} />
             <span className="font-medium">{label}</span>

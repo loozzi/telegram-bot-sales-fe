@@ -207,7 +207,7 @@ export function ResourceDetailPage() {
         <h3 className="empty-state-title">Không tìm thấy sản phẩm</h3>
         <button
           className="btn btn-primary mt-4"
-          onClick={() => navigate(`/shops/${shopId}`)}
+          onClick={() => navigate(`/shops/${shopId}/categories`)}
         >
           Quay lại
         </button>
@@ -218,7 +218,7 @@ export function ResourceDetailPage() {
   return (
     <div className="resource-detail-page animate-fadeIn">
       <BackButton 
-        to={resource.category_id ? `/shops/${shopId}/categories/${resource.category_id}` : `/shops/${shopId}`} 
+        to={`/shops/${shopId}/categories`} 
         label="Quay lại" 
       />
 
