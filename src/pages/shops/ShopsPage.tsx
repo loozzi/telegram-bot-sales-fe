@@ -28,7 +28,7 @@ export function ShopsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingShop, setEditingShop] = useState<Shop | null>(null);
     const [deletingShop, setDeletingShop] = useState<Shop | null>(null);
-    const { logout, user } = useAuthStore();
+    const { logout } = useAuthStore();
 
     const { data, isLoading } = useQuery({
         queryKey: ['shops'],
@@ -134,10 +134,10 @@ export function ShopsPage() {
                         <Plus size={18} />
                         Cửa Hàng Mới
                     </button>
-                    <button 
+                    <button
                         onClick={() => {
                             logout();
-                            navigate("/login"); 
+                            navigate("/login");
                         }}
                         className="btn btn-ghost btn-sm text-error flex items-center gap-2"
                     >
@@ -166,8 +166,8 @@ export function ShopsPage() {
             ) : (
                 <div className="shops-grid">
                     {data?.items?.map((shop) => (
-                        <div 
-                            key={shop.id} 
+                        <div
+                            key={shop.id}
                             className="shop-card card clickable-card"
                             onClick={() => navigate(`/shops/${shop.id}`)}
                         >
