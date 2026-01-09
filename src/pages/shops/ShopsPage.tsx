@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { shopsApi, botApi } from '../../api';
 import type { Shop, ShopCreate } from '../../types';
 import './Shops.css';
+import { useAuthStore } from '../../store';
 
 const shopSchema = z.object({
     name: z.string().min(1, 'Tên là bắt buộc').max(100),
@@ -27,6 +28,7 @@ export function ShopsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingShop, setEditingShop] = useState<Shop | null>(null);
     const [deletingShop, setDeletingShop] = useState<Shop | null>(null);
+    const { logout, user } = useAuthStore();
 
     const { data, isLoading } = useQuery({
         queryKey: ['shops'],
@@ -127,10 +129,22 @@ export function ShopsPage() {
                     <h1 className="page-title">Cửa Hàng</h1>
                     <p className="page-subtitle">Quản lý các cửa hàng bot Telegram của bạn</p>
                 </div>
-                <button className="btn btn-primary" onClick={openCreateModal}>
-                    <Plus size={18} />
-                    Cửa Hàng Mới
-                </button>
+                <div className="flex items-center gap-2"    >
+                    <button className="btn btn-primary" onClick={openCreateModal}>
+                        <Plus size={18} />
+                        Cửa Hàng Mới
+                    </button>
+                    <button 
+                        onClick={() => {
+                            logout();
+                            navigate("/login"); 
+                        }}
+                        className="btn btn-ghost btn-sm text-error flex items-center gap-2"
+                    >
+                        <X size={18} />
+                        Đăng xuất
+                    </button>
+                </div>
             </div>
 
             {isLoading ? (

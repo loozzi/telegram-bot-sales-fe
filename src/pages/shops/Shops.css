@@ -48,6 +48,7 @@
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(12px);
+    cursor: pointer;
 }
 
 .shop-card::before {
