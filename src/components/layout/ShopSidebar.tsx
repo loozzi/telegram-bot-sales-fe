@@ -8,7 +8,8 @@ import {
     Settings,
     ShoppingBag,
     Store,
-    Sun
+    Sun,
+    Wallet
 } from "lucide-react";
 import { useState } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
@@ -36,6 +37,7 @@ export function ShopSidebar() {
         { path: `/shops/${shopId}/overview`, icon: BarChart3, label: "Tổng quan" },
         { path: `/shops/${shopId}/categories`, icon: Folder, label: "Gian hàng" },
         { path: `/shops/${shopId}/orders`, icon: ShoppingBag, label: "Đơn hàng" },
+        { path: `/shops/${shopId}/bank`, icon: Wallet, label: "Giao dịch" },
         { path: `/shops/${shopId}/settings`, icon: Settings, label: "Cấu hình" },
     ];
 

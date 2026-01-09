@@ -10,6 +10,7 @@ import { ShopLayout } from './components/layout/ShopLayout';
 import { LoginPage, RegisterPage } from './pages/auth';
 
 import { ShopsPage } from './pages/shops';
+import { BankPage } from './pages/bank';
 
 // Shop Detail Tabs
 import { ShopOverview } from './pages/shop-detail/tabs/ShopOverview';
@@ -84,6 +85,15 @@ function App() {
             }
           />
 
+          <Route
+            path="/bank"
+            element={
+              <ProtectedRoute>
+                <BankPage />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Shop specific routes */}
           <Route
             path="/shops/:shopId"
@@ -98,7 +108,9 @@ function App() {
             <Route path="categories" element={<ShopCategories />} />
             <Route path="resources" element={<ShopResources />} />
             <Route path="settings" element={<ShopSettings />} />
+            <Route path="settings" element={<ShopSettings />} />
             <Route path="orders" element={<ShopOrders />} />
+            <Route path="bank" element={<BankPage />} />
 
             {/* Detail pages for items within a shop */}
             <Route path="resources/:resourceId" element={<ResourceDetailPage />} />
