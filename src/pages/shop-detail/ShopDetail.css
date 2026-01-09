@@ -190,3 +190,63 @@
         display: none;
     }
 }
+
+/* Modal Fixes */
+.modal-content {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 200ms ease;
+    padding: 0;
+}
+
+.modal-content .modal-title {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.modal-content form {
+    padding: 24px;
+}
+
+.modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-fast);
+    outline: none;
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-textarea:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-textarea:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
