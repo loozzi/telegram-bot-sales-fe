@@ -25,17 +25,17 @@ export interface QRCodeParams {
 
 export const bankApi = {
     listTransactions: async (params?: ListTransactionsParams): Promise<BankTransactionList> => {
-        const response = await apiClient.get('/api/v1/transactions', { params });
+        const response = await apiClient.get('/api/v1/bank/transactions', { params });
         return response.data;
     },
 
     getTransaction: async (transactionId: string): Promise<BankTransaction> => {
-        const response = await apiClient.get(`/api/v1/transactions/${transactionId}`);
+        const response = await apiClient.get(`/api/v1/bank/transactions/${transactionId}`);
         return response.data;
     },
 
     getPendingTransactions: async (limit = 100): Promise<BankTransactionList> => {
-        const response = await apiClient.get('/api/v1/pending', { params: { limit } });
+        const response = await apiClient.get('/api/v1/bank/pending', { params: { limit } });
         return response.data;
     },
 
@@ -44,31 +44,31 @@ export const bankApi = {
         status: BankTransactionStatus,
         content?: string
     ): Promise<void> => {
-        await apiClient.patch(`/api/v1/transactions/${transactionId}/status`, null, {
+        await apiClient.patch(`/api/v1/bank/transactions/${transactionId}/status`, null, {
             params: { status, content },
         });
     },
 
     triggerSync: async (): Promise<void> => {
-        await apiClient.post('/api/v1/sync');
+        await apiClient.post('/api/v1/bank/sync');
     },
 
     syncNow: async (): Promise<void> => {
-        await apiClient.post('/api/v1/sync/now');
+        await apiClient.post('/api/v1/bank/sync/now');
     },
 
     getBankTypes: async (): Promise<string[]> => {
-        const response = await apiClient.get('/api/v1/types');
+        const response = await apiClient.get('/api/v1/bank/types');
         return response.data;
     },
 
     generateQRUrl: async (params: QRCodeParams): Promise<{ qr_url: string }> => {
-        const response = await apiClient.get('/api/v1/qr', { params });
+        const response = await apiClient.get('/api/v1/bank/qr', { params });
         return response.data;
     },
 
     getSupportedBanks: async (): Promise<string[]> => {
-        const response = await apiClient.get('/api/v1/qr/supported-banks');
+        const response = await apiClient.get('/api/v1/bank/qr/supported-banks');
         return response.data;
     },
 };
