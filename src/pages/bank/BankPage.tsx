@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-    Wallet, 
-    ArrowUpRight, 
-    ArrowDownLeft, 
+import {
+    Wallet,
+    ArrowUpRight,
+    ArrowDownLeft,
     RefreshCw,
     Filter,
     CheckCircle2,
@@ -92,7 +92,7 @@ export function BankPage() {
                                 <Filter size={14} />
                                 Trạng thái
                             </label>
-                            <select 
+                            <select
                                 className="form-input w-full md:min-w-[200px] cursor-pointer"
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value as BankTransactionStatus)}
@@ -108,7 +108,7 @@ export function BankPage() {
                             <label className="form-label text-xs uppercase tracking-wider mb-1.5">
                                 Ngân hàng
                             </label>
-                            <select 
+                            <select
                                 className="form-input w-full md:min-w-[200px] cursor-pointer"
                                 value={bankTypeFilter}
                                 onChange={(e) => setBankTypeFilter(e.target.value as BankType)}
@@ -135,7 +135,7 @@ export function BankPage() {
                     </div>
                 </div>
                 <div>
-                    <button 
+                    <button
                         className="btn btn-primary"
                         onClick={() => syncMutation.mutate()}
                         disabled={syncMutation.isPending}
@@ -201,9 +201,8 @@ export function BankPage() {
                                             </div>
                                         </td>
                                         <td>
-                                            <span className={`font-bold ${
-                                                tx.direction === 'in' ? 'text-success' : 'text-error'
-                                            }`}>
+                                            <span className={`font-bold ${tx.direction === 'in' ? 'text-success' : 'text-error'
+                                                }`}>
                                                 {tx.direction === 'in' ? '+' : '-'}{formatCurrency(tx.amount)}
                                             </span>
                                         </td>
@@ -212,7 +211,7 @@ export function BankPage() {
                                                 {tx.content || '-'}
                                                 {tx.description && (
                                                     <div className="text-xs text-base-content/70 truncate">
-                                                        {tx.description}
+                                                        {tx.description.slice(0, 24)}
                                                     </div>
                                                 )}
                                             </div>
@@ -232,12 +231,12 @@ export function BankPage() {
                         </tbody>
                     </table>
                 </div>
-                
+
                 {/* Pagination */}
                 {data && data.total > limit && (
                     <div className="p-4 border-t border-base-200 flex justify-center">
                         <div className="join">
-                            <button 
+                            <button
                                 className="join-item btn btn-sm"
                                 disabled={page === 1}
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
@@ -247,7 +246,7 @@ export function BankPage() {
                             <button className="join-item btn btn-sm no-animation">
                                 Trang {page}
                             </button>
-                            <button 
+                            <button
                                 className="join-item btn btn-sm"
                                 disabled={data.items.length < limit}
                                 onClick={() => setPage(p => p + 1)}
