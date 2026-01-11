@@ -88,6 +88,14 @@ export const inventoriesApi = {
     );
     return response.data;
   },
+
+  downloadErrorLog: async (filename: string): Promise<Blob> => {
+    const response = await apiClient.get(
+      `/api/v1/inventories/download-error-log/${filename}`,
+      { responseType: "blob" }
+    );
+    return response.data;
+  },
 };
 
 export default inventoriesApi;

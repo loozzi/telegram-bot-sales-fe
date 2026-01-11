@@ -15,6 +15,7 @@ const resourceSchema = z.object({
     category_id: z.string().optional(),
     description: z.string().max(500).optional(),
     price: z.number().min(0, "Giá phải >= 0"),
+    total_inventory: z.number().min(0, "Số lượng phải >= 0"),
     is_active: z.boolean().optional(),
 });
 
@@ -71,8 +72,18 @@ export function ShopResources() {
     const toggleResourceStatusMutation = useMutation({
         mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
             resourcesApi.updateStatus(id, is_active),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["resources", shopId] });
+        onSuccess: (_, { id, is_active }) => {
+            queryClient.setQueryData(["resources", shopId], (oldData: any) => {
+                if (!oldData) return oldData;
+                return {
+                    ...oldData,
+                    items: oldData.items.map((resource: Resource) =>
+                        resource.id === id
+                            ? { ...resource, is_active }
+                            : resource
+                    ),
+                };
+            });
             toast.success("Cập nhật trạng thái thành công!");
         },
         onError: () => toast.error("Cập nhật thất bại"),
@@ -218,6 +229,7 @@ export function ShopResources() {
                                 <th>Tên</th>
                                 <th>Gian hàng</th>
                                 <th>Giá</th>
+                                <th>Số lượng</th>
                                 <th>Trạng thái</th>
                                 <th style={{ width: 120 }}>Hành động</th>
                             </tr>
@@ -242,6 +254,7 @@ export function ShopResources() {
                                         )}
                                     </td>
                                     <td>{resource.price.toLocaleString()} đ</td>
+                                    <td>{resource.total_inventory}</td>
                                     <td>
                                         <button
                                             className={`status-toggle ${resource.is_active ? "available" : "sold"}`}

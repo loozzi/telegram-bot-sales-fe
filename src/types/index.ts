@@ -117,6 +117,7 @@ export interface Resource {
   category?: Category | null;
   description?: string | null;
   price: number;
+  total_inventory?: number;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
@@ -145,6 +146,7 @@ export interface Inventory {
   resource_id: string;
   content: string;
   is_sold: boolean;
+  created_at: string;
 }
 
 export interface InventoryCreate {
@@ -160,7 +162,9 @@ export interface InventoryUpdate {
 
 export interface BulkUploadResponse {
   total_created: number;
+  total_errors: number;
   inventories: Inventory[];
+  error_log_file?: string | null;
 }
 
 // ============ Bank Types ============

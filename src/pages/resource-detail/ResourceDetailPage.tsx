@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Boxes,
   Check,
+  Download,
   Edit2,
   FileUp,
   Package,
@@ -37,7 +38,7 @@ export function ResourceDetailPage() {
   const { shopId, resourceId } = useParams<{ shopId: string; resourceId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  
+
   // Resource Edit State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -49,6 +50,7 @@ export function ResourceDetailPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [deletingInventory, setDeletingInventory] = useState<Inventory | null>(null);
   const [selectedInventories, setSelectedInventories] = useState<Set<string>>(new Set());
+  const [uploadErrorLog, setUploadErrorLog] = useState<string | null>(null);
 
   // Data Queries
   const { data: shopData } = useQuery({
@@ -106,22 +108,39 @@ export function ResourceDetailPage() {
       inventoriesApi.upload(resourceId, file),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["inventories"] });
-      toast.success(`Đã tải lên ${response.data?.total_created || 0} mục!`);
+      const { total_created, total_errors, error_log_file } = response.data || {};
+
+      if (total_errors && total_errors > 0) {
+        toast.error(`Thêm ${total_created} mục, lỗi ${total_errors} mục!`);
+        if (error_log_file) {
+          setUploadErrorLog(error_log_file);
+        }
+      } else {
+        toast.success(`Đã tải lên ${total_created || 0} mục!`);
+        setUploadErrorLog(null);
+      }
       setIsUploadModalOpen(false);
       setUploadFile(null);
     },
     onError: () => toast.error("Tải lên thất bại"),
   });
 
-  const toggleSoldMutation = useMutation({
-    mutationFn: ({ id, is_sold }: { id: string; is_sold: boolean }) =>
-      inventoriesApi.update(id, { is_sold }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["inventories"] });
-      toast.success("Cập nhật trạng thái thành công!");
-    },
-    onError: () => toast.error("Cập nhật thất bại"),
-  });
+  const handleDownloadLog = async () => {
+    if (!uploadErrorLog) return;
+    try {
+      const blob = await inventoriesApi.downloadErrorLog(uploadErrorLog);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", uploadErrorLog);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      toast.error("Không thể tải file log");
+    }
+  };
+
 
   const bulkDeleteMutation = useMutation({
     mutationFn: (ids: string[]) => inventoriesApi.bulkDelete(ids),
@@ -209,9 +228,9 @@ export function ResourceDetailPage() {
 
   return (
     <div className="resource-detail-page animate-fadeIn">
-      <BackButton 
-        to={`/shops/${shopId}/categories`} 
-        label="Quay lại" 
+      <BackButton
+        to={`/shops/${shopId}/categories`}
+        label="Quay lại"
       />
 
       {/* Resource Header */}
@@ -278,6 +297,16 @@ export function ResourceDetailPage() {
         <div className="flex justify-between items-center mb-6">
           <h2 className="section-title">Quản lý kho hàng</h2>
           <div className="flex gap-2">
+            {uploadErrorLog && (
+              <button
+                className="btn btn-warning"
+                onClick={handleDownloadLog}
+                title="Tải xuống log lỗi của lần upload trước"
+              >
+                <Download size={18} />
+                Log Lỗi
+              </button>
+            )}
             {selectedInventories.size > 0 && (
               <button
                 className="btn btn-danger"
@@ -330,7 +359,7 @@ export function ResourceDetailPage() {
         </div>
 
         {inventories.length === 0 ? (
-           <div className="empty-state">
+          <div className="empty-state">
             <p className="empty-state-text">
               {searchQuery
                 ? "Không tìm thấy kết quả phù hợp."
@@ -354,12 +383,13 @@ export function ResourceDetailPage() {
                   </th>
                   <th>Sản phẩm</th>
                   <th style={{ width: 140 }}>Trạng thái</th>
+                  <th style={{ width: 140 }}>Ngày thêm</th>
                   <th style={{ width: 80 }}>Hành động</th>
                 </tr>
               </thead>
               <tbody>
                 {inventories.map((item) => (
-                  <tr key={item.id} className={item.is_sold ? "sold" : ""}>
+                  <tr key={item.id} className={item.is_sold ? "sold" : ""} onClick={(e) => e.stopPropagation()}>
                     <td>
                       <input
                         type="checkbox"
@@ -367,6 +397,7 @@ export function ResourceDetailPage() {
                         onChange={(e) =>
                           handleSelectOne(item.id, e.target.checked)
                         }
+                        disabled={item.is_sold}
                       />
                     </td>
                     <td>
@@ -374,17 +405,11 @@ export function ResourceDetailPage() {
                     </td>
                     <td>
                       <button
-                        className={`status-toggle gap-2 ${
-                          item.is_sold ? "sold" : "available"
-                        }`}
-                        onClick={() =>
-                          toggleSoldMutation.mutate({
-                            id: item.id,
-                            is_sold: !item.is_sold,
-                          })
-                        }
+                        className={`status-toggle gap-2 ${item.is_sold ? "sold" : "available"
+                          }`}
+                        disabled
                       >
-                         {item.is_sold ? (
+                        {item.is_sold ? (
                           <>
                             <Check size={14} className="mr-2" /> Đã bán
                           </>
@@ -395,11 +420,12 @@ export function ResourceDetailPage() {
                         )}
                       </button>
                     </td>
+                    <td>{new Date(item.created_at).toLocaleString()}</td>
                     <td>
                       <button
                         className="btn btn-ghost btn-sm"
                         onClick={() => setDeletingInventory(item)}
-                        disabled={item.is_sold} 
+                        disabled={item.is_sold}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -466,7 +492,7 @@ export function ResourceDetailPage() {
                     className="form-input"
                     rows={3}
                     {...resourceForm.register("description")}
-                    placeholder="Nhập mô tả"  
+                    placeholder="Nhập mô tả"
                   />
                 </div>
                 <div className="form-group">
