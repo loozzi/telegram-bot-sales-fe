@@ -12,6 +12,13 @@ export const ordersApi = {
         const response = await apiClient.get(`/api/v1/orders/${orderId}`);
         return response.data;
     },
+
+    downloadOrder: async (orderId: string): Promise<string> => {
+        const response = await apiClient.get(`/api/v1/orders/download/${orderId}`, {
+            responseType: 'text'
+        });
+        return response.data;
+    },
 };
 
 export default ordersApi;

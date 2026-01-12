@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { Package, ShoppingBag, User } from "lucide-react";
+import { Download, Package, ShoppingBag, User } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ordersApi } from "../../../api";
@@ -47,11 +47,12 @@ export function ShopOrders() {
                         <thead>
                             <tr>
                                 <th>Mã đơn</th>
-                                <th>Khách hàng</th>
+                                <th>Người mua</th>
                                 <th>Sản phẩm</th>
-                                <th>Giá</th>
+                                <th>Số lượng</th>
                                 <th>Tổng tiền</th>
                                 <th>Ngày tạo</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -63,7 +64,7 @@ export function ShopOrders() {
                                     <td>
                                         <div className="flex items-center gap-2">
                                             <User size={14} className="text-secondary" />
-                                            <span>{order.user_username || order.user_telegram_id || 'Unknown'}</span>
+                                            <span>{order.buyer || order.user_username || order.user_telegram_id || 'Unknown'}</span>
                                         </div>
                                     </td>
                                     <td>
@@ -72,14 +73,38 @@ export function ShopOrders() {
                                             <span className="font-medium">{order.resource_name || 'N/A'}</span>
                                         </div>
                                     </td>
-                                    <td>
-                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.price_at_purchase)}
+                                    <td className="text-center">
+                                        {order.quantity}
                                     </td>
                                     <td className="font-semibold text-primary">
-                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.price_at_purchase * (order.order_items?.length || 1))}
+                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total_price)}
                                     </td>
                                     <td className="text-secondary text-sm">
                                         {dayjs(order.created_at).format('DD/MM/YYYY HH:mm')}
+                                    </td>
+                                    <td>
+                                        <button 
+                                            className="btn btn-sm btn-ghost text-primary"
+                                            onClick={async () => {
+                                                try {
+                                                    const text = await ordersApi.downloadOrder(order.id);
+                                                    const blob = new Blob([text], { type: 'text/plain' });
+                                                    const url = window.URL.createObjectURL(blob);
+                                                    const a = document.createElement('a');
+                                                    a.href = url;
+                                                    a.download = `order-${order.id}.txt`;
+                                                    document.body.appendChild(a);
+                                                    a.click();
+                                                    window.URL.revokeObjectURL(url);
+                                                    document.body.removeChild(a);
+                                                } catch (error) {
+                                                    console.error("Failed to download order", error);
+                                                }
+                                            }}
+                                            title="Tải xuống"
+                                        >
+                                            <Download size={16} />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}

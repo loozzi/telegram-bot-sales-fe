@@ -287,6 +287,9 @@ export interface Order {
   resource_type?: string | null;
   shop_id?: string | null;
   shop_name?: string | null;
+  quantity: number;
+  total_price: number;
+  buyer?: string | null;
   order_items: OrderItem[];
 }
 
