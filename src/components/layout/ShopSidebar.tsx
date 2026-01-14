@@ -55,7 +55,7 @@ export function ShopSidebar() {
                     onClick={() => setIsShopSwitcherOpen(!isShopSwitcherOpen)}
                     style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}
                 >
-                    <div className="logo-icon" style={{ background: 'var(--primary-color)', color: '#fff' }}>
+                    <div className="logo-icon" style={{ background: 'var(--accent-primary)', color: '#fff' }}>
                         <Store size={24} />
                     </div>
                     <div className="shop-info" style={{ flex: 1, overflow: 'hidden' }}>
