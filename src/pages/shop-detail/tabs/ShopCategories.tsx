@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit2, Folder, Plus, Trash2, X, Package, Eye, ToggleLeft, ToggleRight, GripVertical } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
@@ -45,6 +45,14 @@ const resourceSchema = z.object({
 type CategoryForm = z.infer<typeof categorySchema>;
 type ResourceForm = z.infer<typeof resourceSchema>;
 
+
+// Context to share sortable props with children
+const SortableItemContext = createContext<{
+  attributes: any;
+  listeners: any;
+  isDragging: boolean;
+} | null>(null);
+
 function SortableRow({ children, id }: { children: React.ReactNode; id: string }) {
   const {
     attributes,
@@ -60,19 +68,37 @@ function SortableRow({ children, id }: { children: React.ReactNode; id: string }
     transition,
     zIndex: isDragging ? 1 : "auto",
     position: isDragging ? "relative" : ("static" as any),
-    cursor: "move",
+  };
+
+  const contextValue = {
+    attributes,
+    listeners,
+    isDragging,
   };
 
   return (
-    <tr
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={isDragging ? "bg-base-200 opacity-50" : "hover:bg-base-200 group cursor-move"}
-    >
+    <SortableItemContext.Provider value={contextValue}>
+      <tr
+        ref={setNodeRef}
+        style={style}
+        className={isDragging ? "bg-base-200 opacity-50" : "hover:bg-base-200 group"}
+      >
+        {children}
+      </tr>
+    </SortableItemContext.Provider>
+  );
+}
+
+function DragHandle({ children, className }: { children: React.ReactNode; className?: string }) {
+  const context = useContext(SortableItemContext);
+  if (!context) return <>{children}</>;
+
+  const { attributes, listeners } = context;
+
+  return (
+    <div {...attributes} {...listeners} className={className} style={{ cursor: "grab", touchAction: "none" }}>
       {children}
-    </tr>
+    </div>
   );
 }
 
@@ -275,7 +301,11 @@ export function ShopCategories() {
   };
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+        activationConstraint: {
+            distance: 8,
+        },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -570,8 +600,10 @@ export function ShopCategories() {
                 <tbody>
                   {items.map((category) => (
                     <SortableRow key={category.id} id={category.id}>
-                      <td className="cursor-move text-secondary hover:text-primary transition-colors" style={{cursor: "move"}}>
-                        <GripVertical size={20} />
+                      <td>
+                        <DragHandle className="cursor-grab text-secondary hover:text-primary transition-colors flex justify-center py-2">
+                          <GripVertical size={20} />
+                        </DragHandle>
                       </td>
                       <td className="font-medium">{category.name}</td>
                       <td className="text-secondary truncate">
