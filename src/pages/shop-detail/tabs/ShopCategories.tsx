@@ -122,6 +122,7 @@ export function ShopCategories() {
   // Resource CRUD
   const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
+  const [resources, setResources] = useState<Resource[]>([]);
 
   // --- Queries ---
   const { data: categoriesData } = useQuery({
@@ -148,9 +149,12 @@ export function ShopCategories() {
     placeholderData: keepPreviousData,
   });
 
-  // Sort resources by created_at descending (newest first)
-  // No sort, display as response
-  const resources = resourcesData?.items || [];
+  // Sync resources with query data
+  useEffect(() => {
+    if (resourcesData?.items) {
+      setResources(resourcesData.items);
+    }
+  }, [resourcesData]);
 
   // --- Forms ---
   const categoryForm = useForm<CategoryForm>({
@@ -234,8 +238,15 @@ export function ShopCategories() {
       const payload = { ...data, category_id: data.category_id || null };
       return resourcesApi.update(id, payload);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["resources", shopId, selectedCategory?.id] });
+    onSuccess: (response) => {
+      // Direct update to avoid list reload
+      if (response.data) {
+        const updatedResource = response.data;
+        setResources((prev) =>
+          prev.map((r) => (r.id === updatedResource.id ? updatedResource : r))
+        );
+      }
+      // queryClient.invalidateQueries({ queryKey: ["resources", shopId, selectedCategory?.id] });
       toast.success("Cập nhật sản phẩm thành công!");
       setEditingResource(null);
       setIsResourceModalOpen(false);
@@ -261,6 +272,34 @@ export function ShopCategories() {
     },
     onError: () => toast.error("Cập nhật thất bại"),
   });
+
+  const reorderResourcesMutation = useMutation({
+    mutationFn: (newItems: Resource[]) => {
+      return resourcesApi.reorder(shopId!, selectedCategory!.id, newItems.map((item) => item.id));
+    },
+    onSuccess: () => {
+      // Optimistic update
+    },
+    onError: () => {
+      toast.error("Cập nhật thứ tự thất bại");
+      queryClient.invalidateQueries({ queryKey: ["resources", shopId, selectedCategory?.id] });
+    },
+  });
+
+  const handleDragEndResource = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setResources((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        
+        reorderResourcesMutation.mutate(newItems);
+        return newItems;
+      });
+    }
+  };
 
 
   // --- Handlers ---
@@ -327,230 +366,6 @@ export function ShopCategories() {
   };
 
 
-  // --- Modals ---
-  const Modals = () => (
-    <>
-      {/* Category CRUD Modal */}
-      {isCategoryModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsCategoryModalOpen(false)}>
-          <div className="modal text-left" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">
-                {editingCategory ? "Chỉnh sửa gian hàng" : "Thêm gian hàng mới"}
-              </h2>
-              <button className="modal-close" onClick={() => setIsCategoryModalOpen(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <form
-              onSubmit={categoryForm.handleSubmit((data) => {
-                if (editingCategory) {
-                  updateCategoryMutation.mutate({ id: editingCategory.id, data: { ...data } });
-                } else {
-                  createCategoryMutation.mutate({ ...data, shop_id: shopId! });
-                }
-              })}
-            >
-              <div className="modal-body">
-                <div className="form-group">
-                  <label className="form-label">Tên gian hàng</label>
-                  <input
-                    {...categoryForm.register("name")}
-                    className="form-input"
-                    placeholder="Ví dụ: Netflix, Spotify..."
-                  />
-                  {categoryForm.formState.errors.name && (
-                    <span className="form-error">{categoryForm.formState.errors.name.message}</span>
-                  )}
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Mô tả</label>
-                  <textarea
-                    {...categoryForm.register("description")}
-                    className="form-textarea"
-                    placeholder="Mô tả ngắn về gian hàng..."
-                  />
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setIsCategoryModalOpen(false)}>
-                  Hủy
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}>
-                  {editingCategory ? "Cập nhật" : "Tạo mới"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Category Details (Resources List) Modal */}
-      {selectedCategory && !isResourceModalOpen && (
-        <div className="modal-overlay" onClick={() => setSelectedCategory(null)}>
-          <div className="modal modal-lg text-left" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div>
-                <h2 className="modal-title">{selectedCategory.name}</h2>
-                {selectedCategory.description && <p className="text-sm text-secondary">{selectedCategory.description}</p>}
-              </div>
-              <button className="modal-close" onClick={() => setSelectedCategory(null)}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="section-title">Danh sách sản phẩm</h3>
-                <button className="btn btn-primary btn-sm" onClick={() => openResourceModal()}>
-                  <Plus size={16} /> Thêm sản phẩm
-                </button>
-              </div>
-
-              {resources.length === 0 ? (
-                <div className="empty-state py-8">
-                  <Package size={48} className="empty-state-icon mx-auto mb-2 opacity-50" />
-                  <p className="text-center text-secondary">Chưa có sản phẩm nào trong gian hàng này.</p>
-                </div>
-              ) : (
-                <div className="table-container">
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Tên</th>
-                        <th>Giá</th>
-                        <th>Trạng thái</th>
-                        <th>Số lượng</th>
-                        <th style={{ width: 100 }}></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {resources.map((res: any) => (
-                        <tr key={res.id} className="hover:bg-base-200">
-                          <td>
-                            <div className="font-medium truncate max-w-[120px]">{res.name.slice(0, 24) + (res.name.length > 24 ? '...' : '')}</div>
-                            <div className="text-xs text-secondary truncate max-w-[120px]">{res.description.slice(0, 24) + (res.description.length > 24 ? '...' : '')}</div>
-                          </td>
-                          <td>{res.price?.toLocaleString()} đ</td>
-                          <td>
-                            <button
-                              className={`status-toggle ${res.is_active ? "available" : "sold"
-                                }`}
-                              style={{ border: "none", background: "none", padding: 0 }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleResourceStatusMutation.mutate({
-                                  id: res.id,
-                                  is_active: !res.is_active,
-                                });
-                              }}
-                              title={res.is_active ? "Vô hiệu hóa" : "Kích hoạt"}
-                            >
-                              {res.is_active ? (
-                                <ToggleRight size={28} className="text-success" />
-                              ) : (
-                                <ToggleLeft size={28} className="text-secondary" />
-                              )}
-                            </button>
-                          </td>
-                          <td>{res.total_inventory}</td>
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <div className="flex gap-2 justify-end">
-                              <button
-                                className="btn btn-ghost btn-sm tooltip"
-                                data-tip="Xem chi tiết"
-                                onClick={() => navigate(`/shops/${shopId}/resources/${res.id}`)}
-                              >
-                                <Eye size={16} />
-                              </button>
-                              <button
-                                className="btn btn-ghost btn-sm tooltip"
-                                data-tip="Chỉnh sửa"
-                                onClick={() => openResourceModal(res)}
-                              >
-                                <Edit2 size={16} />
-                              </button>
-                              <button
-                                className="btn btn-ghost btn-sm text-error tooltip"
-                                data-tip="Xóa sản phẩm"
-                                onClick={() => {
-                                  if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
-                                    deleteResourceMutation.mutate(res.id);
-                                  }
-                                }}
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setSelectedCategory(null)}>Đóng</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Resource CRUD Modal */}
-      {isResourceModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsResourceModalOpen(false)}>
-          <div className="modal text-left" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">
-                {editingResource ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
-              </h2>
-              <button className="modal-close" onClick={() => setIsResourceModalOpen(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <form onSubmit={resourceForm.handleSubmit((data) => {
-              if (editingResource) {
-                updateResourceMutation.mutate({ id: editingResource.id, data });
-              } else {
-                createResourceMutation.mutate(data);
-              }
-            })}>
-              <div className="modal-body">
-                <div className="form-group">
-                  <label className="form-label">Tên sản phẩm</label>
-                  <input {...resourceForm.register("name")} className="form-input" />
-                  {resourceForm.formState.errors.name && <span className="form-error">{resourceForm.formState.errors.name.message}</span>}
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Mô tả</label>
-                  <textarea {...resourceForm.register("description")} className="form-textarea" rows={3} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Giá</label>
-                  <input type="number" {...resourceForm.register("price", { valueAsNumber: true })} className="form-input" />
-                  {resourceForm.formState.errors.price && <span className="form-error">{resourceForm.formState.errors.price.message}</span>}
-                </div>
-                <div className="form-group">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" {...resourceForm.register("is_active")} />
-                    <span>Hoạt động</span>
-                  </label>
-                </div>
-                <input type="hidden" {...resourceForm.register("category_id")} />
-                <input type="hidden" {...resourceForm.register("shop_id")} />
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setIsResourceModalOpen(false)}>Hủy</button>
-                <button type="submit" className="btn btn-primary" disabled={createResourceMutation.isPending || updateResourceMutation.isPending}>
-                  {editingResource ? "Cập nhật" : "Tạo mới"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
-  );
 
   return (
     <div className="categories-tab animate-fadeIn">
@@ -680,7 +495,247 @@ export function ShopCategories() {
           </DndContext>
         </div>
       )}
-      <Modals />
+
+      {/* Category CRUD Modal */}
+      {isCategoryModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsCategoryModalOpen(false)}>
+          <div className="modal text-left" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">
+                {editingCategory ? "Chỉnh sửa gian hàng" : "Thêm gian hàng mới"}
+              </h2>
+              <button className="modal-close" onClick={() => setIsCategoryModalOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <form
+              onSubmit={categoryForm.handleSubmit((data) => {
+                if (editingCategory) {
+                  updateCategoryMutation.mutate({ id: editingCategory.id, data: { ...data } });
+                } else {
+                  createCategoryMutation.mutate({ ...data, shop_id: shopId! });
+                }
+              })}
+            >
+              <div className="modal-body">
+                <div className="form-group">
+                  <label className="form-label">Tên gian hàng</label>
+                  <input
+                    {...categoryForm.register("name")}
+                    className="form-input"
+                    placeholder="Ví dụ: Netflix, Spotify..."
+                  />
+                  {categoryForm.formState.errors.name && (
+                    <span className="form-error">{categoryForm.formState.errors.name.message}</span>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Mô tả</label>
+                  <textarea
+                    {...categoryForm.register("description")}
+                    className="form-textarea"
+                    placeholder="Mô tả ngắn về gian hàng..."
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setIsCategoryModalOpen(false)}>
+                  Hủy
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}>
+                  {editingCategory ? "Cập nhật" : "Tạo mới"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Category Details (Resources List) Modal */}
+      {selectedCategory && !isResourceModalOpen && (
+        <div className="modal-overlay" onClick={() => setSelectedCategory(null)}>
+          <div className="modal modal-lg text-left" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h2 className="modal-title">{selectedCategory.name}</h2>
+                {selectedCategory.description && <p className="text-sm text-secondary">{selectedCategory.description}</p>}
+              </div>
+              <button className="modal-close" onClick={() => setSelectedCategory(null)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="section-title">Danh sách sản phẩm</h3>
+                <button className="btn btn-primary btn-sm" onClick={() => openResourceModal()}>
+                  <Plus size={16} /> Thêm sản phẩm
+                </button>
+              </div>
+
+              {resources.length === 0 ? (
+                <div className="empty-state py-8">
+                  <Package size={48} className="empty-state-icon mx-auto mb-2 opacity-50" />
+                  <p className="text-center text-secondary">Chưa có sản phẩm nào trong gian hàng này.</p>
+                </div>
+              ) : (
+                <div className="table-container">
+                  <div className="px-4 py-2 text-xs text-secondary italic border-b border-base-200 bg-base-100 flex items-center gap-1">
+                    <GripVertical size={14} />
+                    <span>Kéo thả vào biểu tượng để thay đổi thứ tự hiển thị sản phẩm</span>
+                  </div>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEndResource}
+                  >
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: 40 }}></th>
+                          <th>Tên</th>
+                          <th>Giá</th>
+                          <th>Trạng thái</th>
+                          <th>Số lượng</th>
+                          <th style={{ width: 100 }}></th>
+                        </tr>
+                      </thead>
+                      <SortableContext
+                        items={resources.map((r) => r.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <tbody>
+                          {resources.map((res: any) => (
+                            <SortableRow key={res.id} id={res.id}>
+                              <td>
+                                <DragHandle className="cursor-grab text-secondary hover:text-primary transition-colors flex justify-center py-2">
+                                  <GripVertical size={20} />
+                                </DragHandle>
+                              </td>
+                              <td>
+                                <div className="font-medium truncate max-w-[120px]">{res.name.slice(0, 24) + (res.name.length > 24 ? '...' : '')}</div>
+                                <div className="text-xs text-secondary truncate max-w-[120px]">{res.description.slice(0, 24) + (res.description.length > 24 ? '...' : '')}</div>
+                              </td>
+                              <td>{res.price?.toLocaleString()} đ</td>
+                              <td>
+                                <button
+                                  className={`status-toggle ${res.is_active ? "available" : "sold"
+                                    }`}
+                                  style={{ border: "none", background: "none", padding: 0 }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleResourceStatusMutation.mutate({
+                                      id: res.id,
+                                      is_active: !res.is_active,
+                                    });
+                                  }}
+                                  title={res.is_active ? "Vô hiệu hóa" : "Kích hoạt"}
+                                >
+                                  {res.is_active ? (
+                                    <ToggleRight size={28} className="text-success" />
+                                  ) : (
+                                    <ToggleLeft size={28} className="text-secondary" />
+                                  )}
+                                </button>
+                              </td>
+                              <td>{res.total_inventory}</td>
+                              <td onClick={(e) => e.stopPropagation()}>
+                                <div className="flex gap-2 justify-end">
+                                  <button
+                                    className="btn btn-ghost btn-sm tooltip"
+                                    data-tip="Xem chi tiết"
+                                    onClick={() => navigate(`/shops/${shopId}/resources/${res.id}`)}
+                                  >
+                                    <Eye size={16} />
+                                  </button>
+                                  <button
+                                    className="btn btn-ghost btn-sm tooltip"
+                                    data-tip="Chỉnh sửa"
+                                    onClick={() => openResourceModal(res)}
+                                  >
+                                    <Edit2 size={16} />
+                                  </button>
+                                  <button
+                                    className="btn btn-ghost btn-sm text-error tooltip"
+                                    data-tip="Xóa sản phẩm"
+                                    onClick={() => {
+                                      if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
+                                        deleteResourceMutation.mutate(res.id);
+                                      }
+                                    }}
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                              </td>
+                            </SortableRow>
+                          ))}
+                        </tbody>
+                      </SortableContext>
+                    </table>
+                  </DndContext>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setSelectedCategory(null)}>Đóng</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resource CRUD Modal */}
+      {isResourceModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsResourceModalOpen(false)}>
+          <div className="modal text-left" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">
+                {editingResource ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
+              </h2>
+              <button className="modal-close" onClick={() => setIsResourceModalOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={resourceForm.handleSubmit((data) => {
+              if (editingResource) {
+                updateResourceMutation.mutate({ id: editingResource.id, data });
+              } else {
+                createResourceMutation.mutate(data);
+              }
+            })}>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label className="form-label">Tên sản phẩm</label>
+                  <input {...resourceForm.register("name")} className="form-input" />
+                  {resourceForm.formState.errors.name && <span className="form-error">{resourceForm.formState.errors.name.message}</span>}
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Mô tả</label>
+                  <textarea {...resourceForm.register("description")} className="form-textarea" rows={3} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Giá</label>
+                  <input type="number" {...resourceForm.register("price", { valueAsNumber: true })} className="form-input" />
+                  {resourceForm.formState.errors.price && <span className="form-error">{resourceForm.formState.errors.price.message}</span>}
+                </div>
+                <div className="form-group">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" {...resourceForm.register("is_active")} />
+                    <span>Hoạt động</span>
+                  </label>
+                </div>
+                <input type="hidden" {...resourceForm.register("category_id")} />
+                <input type="hidden" {...resourceForm.register("shop_id")} />
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setIsResourceModalOpen(false)}>Hủy</button>
+                <button type="submit" className="btn btn-primary" disabled={createResourceMutation.isPending || updateResourceMutation.isPending}>
+                  {editingResource ? "Cập nhật" : "Tạo mới"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

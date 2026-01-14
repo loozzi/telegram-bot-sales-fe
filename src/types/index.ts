@@ -119,6 +119,7 @@ export interface Resource {
   description?: string | null;
   price: number;
   total_inventory?: number;
+  position?: number;
   is_active: boolean;
   created_at?: string;
   updated_at?: string;

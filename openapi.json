@@ -2307,6 +2307,76 @@
                 }
             }
         },
+        "/api/v1/resources/reorder": {
+            "post": {
+                "tags": [
+                    "resources"
+                ],
+                "summary": "Reorder Resources",
+                "operationId": "reorder_resources_api_v1_resources_reorder_post",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "shop_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Shop Id"
+                        }
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Category Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "title": "Ordered Resource Ids"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedResponseSchema_ResourceResponseSchema_"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/resources/update-status/{resource_id}": {
             "put": {
                 "tags": [
@@ -4364,6 +4434,10 @@
                     "total_inventory": {
                         "type": "integer",
                         "title": "Total Inventory"
+                    },
+                    "position": {
+                        "type": "integer",
+                        "title": "Position"
                     }
                 },
                 "type": "object",
@@ -4373,7 +4447,8 @@
                     "name",
                     "price",
                     "is_active",
-                    "total_inventory"
+                    "total_inventory",
+                    "position"
                 ],
                 "title": "ResourceInCategorySchema",
                 "description": "Schema for resource in category detail"
@@ -4432,6 +4507,10 @@
                     "is_active": {
                         "type": "boolean",
                         "title": "Is Active"
+                    },
+                    "position": {
+                        "type": "integer",
+                        "title": "Position"
                     }
                 },
                 "type": "object",
@@ -4440,7 +4519,8 @@
                     "shop_id",
                     "name",
                     "price",
-                    "is_active"
+                    "is_active",
+                    "position"
                 ],
                 "title": "ResourceResponseSchema"
             },
@@ -4503,6 +4583,17 @@
                             }
                         ],
                         "title": "Is Active"
+                    },
+                    "position": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Position"
                     }
                 },
                 "type": "object",

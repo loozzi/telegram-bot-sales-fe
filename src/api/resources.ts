@@ -58,6 +58,21 @@ export const resourcesApi = {
     );
     return response.data;
   },
+
+  reorder: async (
+    shopId: string,
+    categoryId: string,
+    resourceIds: string[]
+  ): Promise<ResponseSchema<any>> => {
+    const response = await apiClient.post(
+      `/api/v1/resources/reorder`,
+      resourceIds,
+      {
+        params: { shop_id: shopId, category_id: categoryId },
+      }
+    );
+    return response.data;
+  },
 };
 
 export default resourcesApi;
