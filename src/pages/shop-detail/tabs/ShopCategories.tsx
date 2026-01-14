@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Edit2, Folder, Plus, Trash2, X, Package, Eye, ToggleLeft, ToggleRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
@@ -9,6 +9,23 @@ import { z } from "zod";
 import { categoriesApi, resourcesApi } from "../../../api";
 import type { Category, CategoryCreate, CategoryUpdate, Resource, ResourceCreate } from "../../../types";
 import "../ShopDetail.css";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 // --- Schemas ---
 const categorySchema = z.object({
@@ -28,6 +45,36 @@ const resourceSchema = z.object({
 type CategoryForm = z.infer<typeof categorySchema>;
 type ResourceForm = z.infer<typeof resourceSchema>;
 
+function SortableRow({ children, id }: { children: React.ReactNode; id: string }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 1 : "auto",
+    position: isDragging ? "relative" : ("static" as any),
+  };
+
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={isDragging ? "bg-base-200 opacity-50" : "hover:bg-base-200 cursor-move"}
+    >
+      {children}
+    </tr>
+  );
+}
+
 export function ShopCategories() {
   const { shopId } = useParams<{ shopId: string }>();
   // navigate unused, but kept if needed for deep links later or removed if strictly modal
@@ -42,6 +89,9 @@ export function ShopCategories() {
   // Category Details (Product List)
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
+  // DnD Local State
+  const [items, setItems] = useState<Category[]>([]);
+
   // Resource CRUD
   const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
@@ -53,7 +103,12 @@ export function ShopCategories() {
     enabled: !!shopId,
   });
 
-  const categories = categoriesData?.items || [];
+  // Sync items with query data
+  useEffect(() => {
+    if (categoriesData?.items) {
+      setItems(categoriesData.items);
+    }
+  }, [categoriesData]);
 
   const { data: resourcesData } = useQuery({
     queryKey: ["resources", shopId, selectedCategory?.id],
@@ -120,6 +175,19 @@ export function ShopCategories() {
       toast.success("Cập nhật trạng thái thành công!");
     },
     onError: () => toast.error("Cập nhật thất bại"),
+  });
+
+  const reorderCategoriesMutation = useMutation({
+    mutationFn: (newItems: Category[]) => {
+      return categoriesApi.reorder(shopId!, newItems.map((item) => item.id));
+    },
+    onSuccess: () => {
+      // Optimistic update
+    },
+    onError: () => {
+      toast.error("Cập nhật thứ tự thất bại");
+      queryClient.invalidateQueries({ queryKey: ["categories", shopId] });
+    },
   });
 
   // --- Mutations (Resources) ---
@@ -203,6 +271,28 @@ export function ShopCategories() {
       });
     }
     setIsResourceModalOpen(true);
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setItems((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        
+        reorderCategoriesMutation.mutate(newItems);
+        return newItems;
+      });
+    }
   };
 
 
@@ -441,7 +531,7 @@ export function ShopCategories() {
         </button>
       </div>
 
-      {categories.length === 0 ? (
+      {items.length === 0 ? (
         <div className="empty-state card">
           <Folder size={48} className="empty-state-icon" />
           <h3 className="empty-state-title">Chưa có gian hàng</h3>
@@ -451,94 +541,102 @@ export function ShopCategories() {
         </div>
       ) : (
         <div className="table-container card">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Tên gian hàng</th>
-                <th>Mô tả</th>
-                <th>Sản phẩm</th>
-                <th>Kho</th>
-                <th>Trạng thái</th>
-                <th style={{ width: 120 }}>Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories.map((category) => (
-                <tr
-                  key={category.id}
-                  className="hover:bg-base-200"
-                >
-                  <td className="font-medium">{category.name}</td>
-                  <td className="text-secondary truncate">
-                    {category.description || "-"}
-                  </td>
-                  <td>
-                    <div className="flex flex-col text-xs">
-                      <span className="font-medium">{category.active_resource_count} đang bán</span>
-                      <span className="text-secondary">Tổng: {category.resource_count}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="font-medium">{category.inventory_quantity}</div>
-                  </td>
-                  <td onClick={(e) => e.stopPropagation()}>
-                    <button
-                      className={`status-toggle ${category.is_active ? "available" : "sold"
-                        }`}
-                      style={{ border: "none", background: "none", padding: 0 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleCategoryStatusMutation.mutate({
-                          id: category.id,
-                          is_active: !category.is_active,
-                        });
-                      }}
-                      title={category.is_active ? "Vô hiệu hóa" : "Kích hoạt"}
-                    >
-                      {category.is_active ? (
-                        <ToggleRight size={28} className="text-success" />
-                      ) : (
-                        <ToggleLeft size={28} className="text-secondary" />
-                      )}
-                    </button>
-                  </td>
-                  <td onClick={(e) => e.stopPropagation()}>
-                    <div className="flex gap-2">
-                      <button
-                        className="btn btn-ghost btn-sm tooltip"
-                        data-tip="Xem chi tiết"
-                        onClick={() => setSelectedCategory(category)}
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <button
-                        className="btn btn-ghost btn-sm tooltip"
-                        data-tip="Chỉnh sửa"
-                        onClick={() => openCategoryModal(category)}
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button
-                        className="btn btn-ghost btn-sm text-error tooltip"
-                        data-tip="Xóa gian hàng"
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "Bạn có chắc chắn muốn xóa gian hàng này? Tất cả sản phẩm trong gian hàng cũng sẽ bị xóa."
-                            )
-                          ) {
-                            deleteCategoryMutation.mutate(category.id);
-                          }
-                        }}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Tên gian hàng</th>
+                  <th>Mô tả</th>
+                  <th>Sản phẩm</th>
+                  <th>Kho</th>
+                  <th>Trạng thái</th>
+                  <th style={{ width: 120 }}>Hành động</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <SortableContext
+                items={items.map((c) => c.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <tbody>
+                  {items.map((category) => (
+                    <SortableRow key={category.id} id={category.id}>
+                      <td className="font-medium">{category.name}</td>
+                      <td className="text-secondary truncate">
+                        {category.description || "-"}
+                      </td>
+                      <td>
+                        <div className="flex flex-col text-xs">
+                          <span className="font-medium">{category.active_resource_count} đang bán</span>
+                          <span className="text-secondary">Tổng: {category.resource_count}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="font-medium">{category.inventory_quantity}</div>
+                      </td>
+                      <td onClick={(e) => e.stopPropagation()} className="cursor-default">
+                        <button
+                          className={`status-toggle ${category.is_active ? "available" : "sold"
+                            }`}
+                          style={{ border: "none", background: "none", padding: 0 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCategoryStatusMutation.mutate({
+                              id: category.id,
+                              is_active: !category.is_active,
+                            });
+                          }}
+                          title={category.is_active ? "Vô hiệu hóa" : "Kích hoạt"}
+                        >
+                          {category.is_active ? (
+                            <ToggleRight size={28} className="text-success" />
+                          ) : (
+                            <ToggleLeft size={28} className="text-secondary" />
+                          )}
+                        </button>
+                      </td>
+                      <td onClick={(e) => e.stopPropagation()} className="cursor-default">
+                        <div className="flex gap-2">
+                          <button
+                            className="btn btn-ghost btn-sm tooltip"
+                            data-tip="Xem chi tiết"
+                            onClick={() => setSelectedCategory(category)}
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-sm tooltip"
+                            data-tip="Chỉnh sửa"
+                            onClick={() => openCategoryModal(category)}
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-sm text-error tooltip"
+                            data-tip="Xóa gian hàng"
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  "Bạn có chắc chắn muốn xóa gian hàng này? Tất cả sản phẩm trong gian hàng cũng sẽ bị xóa."
+                                )
+                              ) {
+                                deleteCategoryMutation.mutate(category.id);
+                              }
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </SortableRow>
+                  ))}
+                </tbody>
+              </SortableContext>
+            </table>
+          </DndContext>
         </div>
       )}
       <Modals />

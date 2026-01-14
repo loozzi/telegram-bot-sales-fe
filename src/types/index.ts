@@ -93,6 +93,7 @@ export interface Category {
   resource_count: number;
   active_resource_count: number;
   inventory_quantity: number;
+  position?: number;
   resources?: Resource[]; // populated when fetching single category
 }
 

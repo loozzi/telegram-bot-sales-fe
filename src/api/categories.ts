@@ -52,6 +52,17 @@ export const categoriesApi = {
     );
     return response.data;
   },
+
+  reorder: async (shopId: string, categoryIds: string[]): Promise<ResponseSchema<any>> => {
+    const response = await apiClient.post(
+      "/api/v1/categories/reorder",
+      categoryIds,
+      {
+        params: { shop_id: shopId },
+      }
+    );
+    return response.data;
+  },
 };
 
 export default categoriesApi;
