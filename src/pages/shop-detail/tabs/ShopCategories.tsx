@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit2, Folder, Plus, Trash2, X, Package, Eye, ToggleLeft, ToggleRight } from "lucide-react";
+import { Edit2, Folder, Plus, Trash2, X, Package, Eye, ToggleLeft, ToggleRight, GripVertical } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -16,7 +16,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
+  type DragEndEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -60,6 +60,7 @@ function SortableRow({ children, id }: { children: React.ReactNode; id: string }
     transition,
     zIndex: isDragging ? 1 : "auto",
     position: isDragging ? "relative" : ("static" as any),
+    cursor: "move",
   };
 
   return (
@@ -68,7 +69,7 @@ function SortableRow({ children, id }: { children: React.ReactNode; id: string }
       style={style}
       {...attributes}
       {...listeners}
-      className={isDragging ? "bg-base-200 opacity-50" : "hover:bg-base-200 cursor-move"}
+      className={isDragging ? "bg-base-200 opacity-50" : "hover:bg-base-200 group cursor-move"}
     >
       {children}
     </tr>
@@ -541,6 +542,10 @@ export function ShopCategories() {
         </div>
       ) : (
         <div className="table-container card">
+          <div className="px-4 py-2 text-xs text-secondary italic border-b border-base-200 bg-base-100 flex items-center gap-1">
+            <GripVertical size={14} />
+            <span>Kéo thả vào biểu tượng để thay đổi thứ tự hiển thị gian hàng</span>
+          </div>
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -549,6 +554,7 @@ export function ShopCategories() {
             <table className="table">
               <thead>
                 <tr>
+                  <th style={{ width: 40 }}></th>
                   <th>Tên gian hàng</th>
                   <th>Mô tả</th>
                   <th>Sản phẩm</th>
@@ -564,6 +570,9 @@ export function ShopCategories() {
                 <tbody>
                   {items.map((category) => (
                     <SortableRow key={category.id} id={category.id}>
+                      <td className="cursor-move text-secondary hover:text-primary transition-colors" style={{cursor: "move"}}>
+                        <GripVertical size={20} />
+                      </td>
                       <td className="font-medium">{category.name}</td>
                       <td className="text-secondary truncate">
                         {category.description || "-"}
