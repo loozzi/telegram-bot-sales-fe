@@ -8,9 +8,13 @@ import type {
 } from "../types";
 
 export const resourcesApi = {
-  list: async (shopId: string): Promise<PaginatedResponse<Resource>> => {
+  list: async (
+    shopId: string,
+    page: number = 1,
+    size: number = 20
+  ): Promise<PaginatedResponse<Resource>> => {
     const response = await apiClient.get("/api/v1/resources/", {
-      params: { shop_id: shopId },
+      params: { shop_id: shopId, page, size },
     });
     return response.data;
   },

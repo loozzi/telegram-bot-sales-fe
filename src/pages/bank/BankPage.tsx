@@ -8,7 +8,9 @@ import {
     Filter,
     CheckCircle2,
     XCircle,
-    Clock
+    Clock,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { bankApi } from '../../api/bank';
@@ -21,7 +23,7 @@ export function BankPage() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
-    const [limit] = useState(20);
+    const [limit, setLimit] = useState(20);
     const [statusFilter, setStatusFilter] = useState<BankTransactionStatus | ''>('');
     const [bankTypeFilter, setBankTypeFilter] = useState<BankType | ''>('');
 
@@ -146,6 +148,46 @@ export function BankPage() {
                 </div>
             </div>
 
+            {/* Pagination Controls */}
+            <div className="flex justify-between items-center mb-0 px-1">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">Hiển thị</span>
+                    <select
+                        className="form-select text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        value={limit}
+                        onChange={(e) => {
+                            setLimit(Number(e.target.value));
+                            setPage(1);
+                        }}
+                    >
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                    </select>
+                    <span className="text-sm text-gray-500">dòng mỗi trang</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    <span className="text-sm text-gray-700">
+                        Trang {page} / {Math.ceil((data?.total || 0) / limit) || 1}
+                    </span>
+                    <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setPage((p) => p + 1)}
+                        disabled={!data || page >= (Math.ceil((data?.total || 0) / limit) || 1)}
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </div>
+            </div>
+
             {/* Transactions Table */}
             <div className="card bg-base-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -232,30 +274,7 @@ export function BankPage() {
                     </table>
                 </div>
 
-                {/* Pagination */}
-                {data && data.total > limit && (
-                    <div className="p-4 border-t border-base-200 flex justify-center">
-                        <div className="join">
-                            <button
-                                className="join-item btn btn-sm"
-                                disabled={page === 1}
-                                onClick={() => setPage(p => Math.max(1, p - 1))}
-                            >
-                                «
-                            </button>
-                            <button className="join-item btn btn-sm no-animation">
-                                Trang {page}
-                            </button>
-                            <button
-                                className="join-item btn btn-sm"
-                                disabled={data.items.length < limit}
-                                onClick={() => setPage(p => p + 1)}
-                            >
-                                »
-                            </button>
-                        </div>
-                    </div>
-                )}
+
             </div>
         </div>
     );
