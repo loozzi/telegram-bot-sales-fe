@@ -101,6 +101,7 @@ export function ResourceDetailPage() {
     mutationFn: (id: string) => inventoriesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventories"] });
+      queryClient.invalidateQueries({ queryKey: ["resource", resourceId] });
       toast.success("Xóa mục kho thành công!");
       setDeletingInventory(null);
     },
@@ -112,6 +113,7 @@ export function ResourceDetailPage() {
       inventoriesApi.upload(resourceId, file),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["inventories"] });
+      queryClient.invalidateQueries({ queryKey: ["resource", resourceId] });
       const { total_created, total_errors, error_log_file } = response.data || {};
 
       if (total_errors && total_errors > 0) {
@@ -150,6 +152,7 @@ export function ResourceDetailPage() {
     mutationFn: (ids: string[]) => inventoriesApi.bulkDelete(ids),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventories"] });
+      queryClient.invalidateQueries({ queryKey: ["resource", resourceId] });
       toast.success(`Đã xóa ${selectedInventories.size} mục!`);
       setSelectedInventories(new Set());
     },
@@ -165,8 +168,11 @@ export function ResourceDetailPage() {
   const shop = shopData?.data;
   const resource = resourceData?.data;
   const inventories = inventoriesData?.items || [];
-  const soldCount = inventories.filter((i) => i.is_sold).length;
-  const availableCount = inventories.length - soldCount;
+
+  // Use resource-level totals from API instead of counting current page
+  const totalInventories = resource?.total_inventories || 0;
+  const totalActiveInventories = resource?.total_active_inventories || 0;
+  const totalSoldInventories = totalInventories - totalActiveInventories;
 
   // Handlers
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -279,19 +285,19 @@ export function ResourceDetailPage() {
         <div className="stat-card card">
           <div className="stat-info">
             <p className="stat-label">Tổng trong kho</p>
-            <p className="stat-value">{inventories.length}</p>
+            <p className="stat-value">{totalInventories}</p>
           </div>
         </div>
         <div className="stat-card card">
           <div className="stat-info">
             <p className="stat-label">Còn lại</p>
-            <p className="stat-value text-success">{availableCount}</p>
+            <p className="stat-value text-success">{totalActiveInventories}</p>
           </div>
         </div>
         <div className="stat-card card">
           <div className="stat-info">
             <p className="stat-label">Đã bán</p>
-            <p className="stat-value text-muted">{soldCount}</p>
+            <p className="stat-value text-muted">{totalSoldInventories}</p>
           </div>
         </div>
       </div>
