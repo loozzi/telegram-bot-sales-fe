@@ -159,6 +159,16 @@ export function ResourceDetailPage() {
     onError: () => toast.error("Xóa hàng loạt thất bại"),
   });
 
+  const deleteAllMutation = useMutation({
+    mutationFn: (resourceId: string) => inventoriesApi.deleteAll(resourceId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventories"] });
+      queryClient.invalidateQueries({ queryKey: ["resource", resourceId] });
+      toast.success("Đã xóa tất cả hàng trong kho!");
+    },
+    onError: () => toast.error("Xóa tất cả thất bại"),
+  });
+
   // Forms
   const resourceForm = useForm<ResourceForm>({
     resolver: zodResolver(resourceSchema),
@@ -340,6 +350,24 @@ export function ResourceDetailPage() {
             >
               <Upload size={18} />
               Tải Lên
+            </button>
+            <button
+              className="btn btn-danger"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "Bạn có chắc chắn muốn xóa TẤT CẢ hàng trong kho này? Hành động này không thể hoàn tác!"
+                  )
+                ) {
+                  if (resourceId) {
+                    deleteAllMutation.mutate(resourceId);
+                  }
+                }
+              }}
+              disabled={inventories.length === 0 || deleteAllMutation.isPending}
+            >
+              <Trash2 size={18} />
+              Xóa Tất Cả
             </button>
           </div>
         </div>

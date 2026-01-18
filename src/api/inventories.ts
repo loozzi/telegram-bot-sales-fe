@@ -96,6 +96,17 @@ export const inventoriesApi = {
     );
     return response.data;
   },
+
+  deleteAll: async (resourceId: string): Promise<ResponseSchema<null>> => {
+    const response = await apiClient.post(
+      "/api/v1/inventories/delete-all",
+      null,
+      {
+        params: { resource_id: resourceId },
+      }
+    );
+    return response.data;
+  },
 };
 
 export default inventoriesApi;
