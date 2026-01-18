@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit2, Package, Plus, ToggleLeft, ToggleRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit2, Package, Plus, ToggleLeft, ToggleRight } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -25,12 +25,14 @@ export function ShopResources() {
     const { shopId } = useParams<{ shopId: string }>();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
     const [isResourceModalOpen, setIsResourceModalOpen] = useState(false);
     const [editingResource, setEditingResource] = useState<Resource | null>(null);
 
     const { data: resourcesData } = useQuery({
-        queryKey: ["resources", shopId],
-        queryFn: () => resourcesApi.list(shopId!),
+        queryKey: ["resources", shopId, page, pageSize],
+        queryFn: () => resourcesApi.list(shopId!, page, pageSize),
         enabled: !!shopId,
         placeholderData: keepPreviousData,
     });
@@ -212,6 +214,45 @@ export function ShopResources() {
                     <Plus size={18} />
                     Sản phẩm mới
                 </button>
+            </div>
+            
+            <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">Hiển thị</span>
+                    <select
+                        className="form-select text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        value={pageSize}
+                        onChange={(e) => {
+                            setPageSize(Number(e.target.value));
+                            setPage(1); // Reset to page 1 when changing size
+                        }}
+                    >
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                    </select>
+                    <span className="text-sm text-gray-500">dòng mỗi trang</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    <span className="text-sm text-gray-700">
+                        Trang {page} / {Math.ceil((resourcesData?.total || 0) / pageSize) || 1}
+                    </span>
+                    <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setPage((p) => p + 1)}
+                        disabled={page >= (Math.ceil((resourcesData?.total || 0) / pageSize) || 1)}
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </div>
             </div>
             {resources.length === 0 ? (
                 <div className="empty-state card">

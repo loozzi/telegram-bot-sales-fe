@@ -11,6 +11,8 @@ import {
   Trash2,
   Upload,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -45,6 +47,8 @@ export function ResourceDetailPage() {
   // Inventories Management State
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
   const [filterSold, setFilterSold] = useState<string>("all"); // 'all', 'sold', 'available'
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -66,10 +70,10 @@ export function ResourceDetailPage() {
   });
 
   const { data: inventoriesData } = useQuery({
-    queryKey: ["inventories", resourceId, searchQuery, filterSold],
+    queryKey: ["inventories", resourceId, searchQuery, filterSold, page, limit],
     queryFn: () => {
       const isSold = filterSold === "all" ? undefined : filterSold === "sold";
-      return inventoriesApi.list(resourceId!, 1, 100, searchQuery, isSold);
+      return inventoriesApi.list(resourceId!, page, limit, searchQuery, isSold);
     },
     enabled: !!resourceId,
   });
@@ -355,6 +359,46 @@ export function ResourceDetailPage() {
               <option value="available">Có sẵn</option>
               <option value="sold">Đã bán</option>
             </select>
+          </div>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex justify-between items-center mb-4 px-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Hiển thị</span>
+            <select
+              className="form-select text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              value={limit}
+              onChange={(e) => {
+                setLimit(Number(e.target.value));
+                setPage(1);
+              }}
+            >
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span className="text-sm text-gray-500">dòng mỗi trang</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span className="text-sm text-gray-700">
+              Trang {page} / {Math.ceil((inventoriesData?.total || 0) / limit) || 1}
+            </span>
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => setPage((p) => p + 1)}
+              disabled={page >= (Math.ceil((inventoriesData?.total || 0) / limit) || 1)}
+            >
+              <ChevronRight size={16} />
+            </button>
           </div>
         </div>
 

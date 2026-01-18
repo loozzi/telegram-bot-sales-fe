@@ -696,9 +696,7 @@ a:hover {
 
 /* Responsive */
 @media (max-width: 768px) {
-  :root {
-    --sidebar-width: 0px;
-  }
+
 
   .modal {
     margin: 16px;

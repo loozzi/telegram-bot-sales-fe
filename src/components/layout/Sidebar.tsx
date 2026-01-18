@@ -14,7 +14,10 @@ import {
   ShoppingBag,
   Sun,
   Moon,
+  Menu,
+  X,
 } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore, useThemeStore } from "../../store";
 import "./Sidebar.css";
@@ -36,6 +39,11 @@ export function Sidebar() {
   const { t } = useTranslation();
   const { logout, user } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const toggleMobileSidebar = () => setIsMobileOpen(!isMobileOpen);
+  const closeMobileSidebar = () => setIsMobileOpen(false);
+
 
   const handleLogout = () => {
     logout();
@@ -43,7 +51,23 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="sidebar">
+    <>
+      <button
+        className="mobile-toggle"
+        onClick={toggleMobileSidebar}
+        aria-label="Toggle Menu"
+      >
+        {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      {/* Overlay */}
+      <div
+        className={`sidebar-overlay ${isMobileOpen ? "open visible" : ""}`}
+        onClick={closeMobileSidebar}
+      />
+
+      <aside className={`sidebar ${isMobileOpen ? "open" : ""}`}>
+
       <div className="sidebar-header">
         <div className="logo">
           <div className="logo-icon">
@@ -59,6 +83,7 @@ export function Sidebar() {
             key={item.path}
             to={item.path}
             className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+            onClick={closeMobileSidebar}
           >
             <item.icon size={20} />
             <span>{t(item.label)}</span>
@@ -88,6 +113,7 @@ export function Sidebar() {
           <LogOut size={18} />
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

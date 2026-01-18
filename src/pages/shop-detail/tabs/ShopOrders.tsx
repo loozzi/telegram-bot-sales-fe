@@ -1,24 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { Download, Package, ShoppingBag, User } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Package, ShoppingBag, User } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ordersApi } from "../../../api";
 import type { Order } from "../../../types";
 import "../ShopDetail.css";
 
-const PAGE_SIZE = 20;
-
 export function ShopOrders() {
     const { shopId } = useParams<{ shopId: string }>();
     const [ordersPage, setOrdersPage] = useState(1);
+    const [limit, setLimit] = useState(20);
 
     const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
-        queryKey: ["orders", shopId, ordersPage],
+        queryKey: ["orders", shopId, ordersPage, limit],
         queryFn: () => ordersApi.listShopOrders({
             shop_id: shopId!,
-            skip: (ordersPage - 1) * PAGE_SIZE,
-            limit: PAGE_SIZE,
+            skip: (ordersPage - 1) * limit,
+            limit: limit,
         }),
         enabled: !!shopId,
     });
@@ -27,6 +26,46 @@ export function ShopOrders() {
         <div className="orders-tab animate-fadeIn">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="section-title">Danh sách đơn hàng</h2>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-between items-center mb-4 px-1">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">Hiển thị</span>
+                    <select
+                        className="form-select text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        value={limit}
+                        onChange={(e) => {
+                            setLimit(Number(e.target.value));
+                            setOrdersPage(1);
+                        }}
+                    >
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                    </select>
+                    <span className="text-sm text-gray-500">dòng mỗi trang</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setOrdersPage((p) => Math.max(1, p - 1))}
+                        disabled={ordersPage === 1}
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    <span className="text-sm text-gray-700">
+                        Trang {ordersPage} / {Math.ceil((ordersData?.total || 0) / limit) || 1}
+                    </span>
+                    <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setOrdersPage((p) => p + 1)}
+                        disabled={ordersPage >= (Math.ceil((ordersData?.total || 0) / limit) || 1)}
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </div>
             </div>
 
             {isLoadingOrders ? (
@@ -112,29 +151,7 @@ export function ShopOrders() {
                     </table>
 
                     {/* Pagination */}
-                    {Math.ceil((ordersData.total || 0) / PAGE_SIZE) > 1 && (
-                        <div className="pagination p-4 border-t border-gray-100 flex justify-between items-center">
-                            <div className="text-sm text-secondary">
-                                Trang {ordersPage} / {Math.ceil((ordersData.total || 0) / PAGE_SIZE)}
-                            </div>
-                            <div className="flex gap-2">
-                                <button
-                                    className="btn btn-sm btn-ghost"
-                                    disabled={ordersPage === 1}
-                                    onClick={() => setOrdersPage(p => p - 1)}
-                                >
-                                    Trước
-                                </button>
-                                <button
-                                    className="btn btn-sm btn-ghost"
-                                    disabled={ordersPage >= Math.ceil((ordersData.total || 0) / PAGE_SIZE)}
-                                    onClick={() => setOrdersPage(p => p + 1)}
-                                >
-                                    Sau
-                                </button>
-                            </div>
-                        </div>
-                    )}
+
                 </div>
             )}
         </div>

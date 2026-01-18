@@ -9,7 +9,9 @@ import {
     ShoppingBag,
     Store,
     Sun,
-    Wallet
+    Wallet,
+    Menu,
+    X,
 } from "lucide-react";
 import { useState } from "react";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
@@ -24,6 +26,11 @@ export function ShopSidebar() {
     const { logout, user } = useAuthStore();
     const { theme, toggleTheme } = useThemeStore();
     const [isShopSwitcherOpen, setIsShopSwitcherOpen] = useState(false);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+    const toggleMobileSidebar = () => setIsMobileOpen(!isMobileOpen);
+    const closeMobileSidebar = () => setIsMobileOpen(false);
+
 
     const { data: shopsData } = useQuery({
         queryKey: ["shops"],
@@ -47,7 +54,23 @@ export function ShopSidebar() {
     };
 
     return (
-        <aside className="sidebar">
+        <>
+            <button
+                className="mobile-toggle"
+                onClick={toggleMobileSidebar}
+                aria-label="Toggle Menu"
+            >
+                {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+
+            {/* Overlay */}
+            <div
+                className={`sidebar-overlay ${isMobileOpen ? "open visible" : ""}`}
+                onClick={closeMobileSidebar}
+            />
+
+            <aside className={`sidebar ${isMobileOpen ? "open" : ""}`}>
+
             <div className="sidebar-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
 
                 <div
@@ -109,6 +132,7 @@ export function ShopSidebar() {
                         to={item.path}
                         className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
                         end={item.path.endsWith('overview')} // Only use 'end' matching for overview if it's the index
+                        onClick={closeMobileSidebar}
                     >
                         <item.icon size={20} />
                         <span>{item.label}</span>
@@ -138,6 +162,7 @@ export function ShopSidebar() {
                     <LogOut size={18} />
                 </button>
             </div>
-        </aside>
+            </aside>
+        </>
     );
 }
