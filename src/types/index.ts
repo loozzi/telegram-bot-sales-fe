@@ -303,4 +303,8 @@ export interface OrderListParams {
   limit?: number;
   user_telegram_id?: string;
   resource_id?: string;
+  buyer_name?: string;
+  category_id?: string;
+  sort_by?: 'created_at' | 'price_at_purchase' | 'total_price';
+  sort_order?: 'asc' | 'desc';
 }

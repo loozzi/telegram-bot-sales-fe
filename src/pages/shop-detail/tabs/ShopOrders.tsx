@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { ChevronLeft, ChevronRight, Download, Package, ShoppingBag, User } from "lucide-react";
+import { ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Download, Package, ShoppingBag, User } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { ordersApi } from "../../../api";
+import { ordersApi, resourcesApi, categoriesApi } from "../../../api";
 import type { Order } from "../../../types";
 import "../ShopDetail.css";
 
@@ -11,14 +11,38 @@ export function ShopOrders() {
     const { shopId } = useParams<{ shopId: string }>();
     const [ordersPage, setOrdersPage] = useState(1);
     const [limit, setLimit] = useState(20);
+    // filter states
+    const [resourceId, setResourceId] = useState<string>('');
+    const [buyerName, setBuyerName] = useState<string>('');
+    const [categoryId, setCategoryId] = useState<string>('');
+    const [sortBy, setSortBy] = useState<'created_at' | 'price_at_purchase' | 'total_price'>('created_at');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+    // fetch resources and categories for select options
+    const { data: resourcesData } = useQuery({
+        queryKey: ["resources", shopId],
+        queryFn: () => resourcesApi.list(shopId!),
+        enabled: !!shopId,
+    });
+    const { data: categoriesData } = useQuery({
+        queryKey: ["categories", shopId],
+        queryFn: () => categoriesApi.list(shopId!),
+        enabled: !!shopId,
+    });
 
     const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
-        queryKey: ["orders", shopId, ordersPage, limit],
-        queryFn: () => ordersApi.listShopOrders({
-            shop_id: shopId!,
-            skip: (ordersPage - 1) * limit,
-            limit: limit,
-        }),
+        queryKey: ["orders", shopId, ordersPage, limit, resourceId, buyerName, categoryId, sortBy, sortOrder],
+        queryFn: () =>
+            ordersApi.listShopOrders({
+                shop_id: shopId!,
+                skip: (ordersPage - 1) * limit,
+                limit: limit,
+                resource_id: resourceId || undefined,
+                buyer_name: buyerName || undefined,
+                category_id: categoryId || undefined,
+                sort_by: sortBy,
+                sort_order: sortOrder,
+            }),
         enabled: !!shopId,
     });
 
@@ -28,7 +52,7 @@ export function ShopOrders() {
                 <h2 className="section-title">Danh sách đơn hàng</h2>
             </div>
 
-            {/* Pagination Controls */}
+            {/* Filter and pagination controls */}
             <div className="flex justify-between items-center mb-4 px-1">
                 <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-500">Hiển thị</span>
@@ -45,29 +69,73 @@ export function ShopOrders() {
                         <option value={100}>100</option>
                     </select>
                     <span className="text-sm text-gray-500">dòng mỗi trang</span>
-                </div>
+                    {/* Filter inputs */}
+                    <input
+                        type="text"
+                        placeholder="Tên người mua"
+                        className="form-input text-sm border-gray-300 rounded-md shadow-sm focus:border-purple-400 focus:ring focus:ring-purple-200 focus:ring-opacity-50 h-[38px]"
+                        value={buyerName}
+                        onChange={(e) => {
+                            setBuyerName(e.target.value);
+                            setOrdersPage(1);
+                        }}
+                    />
+                    <select
+                        className="form-select text-sm border-gray-300 rounded-md"
+                        value={resourceId}
+                        onChange={(e) => {
+                            setResourceId(e.target.value);
+                            setOrdersPage(1);
+                        }}
+                    >
+                        <option value="">Tất cả sản phẩm</option>
+                        {resourcesData?.items.map((r) => (
+                            <option key={r.id} value={r.id}>
+                                {r.name}
+                            </option>
+                        ))}
+                    </select>
+                    <select
+                        className="form-select text-sm border-gray-300 rounded-md"
+                        value={categoryId}
+                        onChange={(e) => {
+                            setCategoryId(e.target.value);
+                            setOrdersPage(1);
+                        }}
+                    >
+                        <option value="">Tất cả danh mục</option>
+                        {categoriesData?.items.map((c) => (
+                            <option key={c.id} value={c.id}>
+                                {c.name}
+                            </option>
+                        ))}
+                    </select>
 
-                <div className="flex items-center gap-2">
-                    <button
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => setOrdersPage((p) => Math.max(1, p - 1))}
-                        disabled={ordersPage === 1}
-                    >
-                        <ChevronLeft size={16} />
-                    </button>
-                    <span className="text-sm text-gray-700">
-                        Trang {ordersPage} / {Math.ceil((ordersData?.total || 0) / limit) || 1}
-                    </span>
-                    <button
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => setOrdersPage((p) => p + 1)}
-                        disabled={ordersPage >= (Math.ceil((ordersData?.total || 0) / limit) || 1)}
-                    >
-                        <ChevronRight size={16} />
-                    </button>
                 </div>
             </div>
 
+            {/* Pagination navigation */}
+            <div className="flex items-center gap-2">
+                <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => setOrdersPage((p) => Math.max(1, p - 1))}
+                    disabled={ordersPage === 1}
+                >
+                    <ChevronLeft size={16} />
+                </button>
+                <span className="text-sm text-gray-700">
+                    Trang {ordersPage} / {Math.ceil((ordersData?.total || 0) / limit) || 1}
+                </span>
+                <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => setOrdersPage((p) => p + 1)}
+                    disabled={ordersPage >= (Math.ceil((ordersData?.total || 0) / limit) || 1)}
+                >
+                    <ChevronRight size={16} />
+                </button>
+            </div>
+
+            {/* Main content */}
             {isLoadingOrders ? (
                 <div className="page-loader">
                     <div className="spinner spinner-lg" />
@@ -89,8 +157,51 @@ export function ShopOrders() {
                                 <th>Người mua</th>
                                 <th>Sản phẩm</th>
                                 <th>Số lượng</th>
-                                <th>Tổng tiền</th>
-                                <th>Ngày tạo</th>
+                                <th
+                                    className="cursor-pointer hover:bg-gray-50 transition-colors select-none"
+                                    onClick={() => {
+                                        setSortBy('price_at_purchase');
+                                        setSortOrder(sortBy === 'price_at_purchase' && sortOrder === 'asc' ? 'desc' : 'asc');
+                                        setOrdersPage(1);
+                                    }}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Giá
+                                        {sortBy === 'price_at_purchase' && (
+                                            sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />
+                                        )}
+                                    </div>
+                                </th>
+                                <th
+                                    className="cursor-pointer hover:bg-gray-50 transition-colors select-none"
+                                    onClick={() => {
+                                        setSortBy('total_price');
+                                        setSortOrder(sortBy === 'total_price' && sortOrder === 'asc' ? 'desc' : 'asc');
+                                        setOrdersPage(1);
+                                    }}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Tổng tiền
+                                        {sortBy === 'total_price' && (
+                                            sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />
+                                        )}
+                                    </div>
+                                </th>
+                                <th
+                                    className="cursor-pointer hover:bg-gray-50 transition-colors select-none"
+                                    onClick={() => {
+                                        setSortBy('created_at');
+                                        setSortOrder(sortBy === 'created_at' && sortOrder === 'asc' ? 'desc' : 'asc');
+                                        setOrdersPage(1);
+                                    }}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Ngày tạo
+                                        {sortBy === 'created_at' && (
+                                            sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />
+                                        )}
+                                    </div>
+                                </th>
                                 <th>Thao tác</th>
                             </tr>
                         </thead>
@@ -112,8 +223,9 @@ export function ShopOrders() {
                                             <span className="font-medium">{order.resource_name || 'N/A'}</span>
                                         </div>
                                     </td>
+                                    <td className="text-center">{order.quantity}</td>
                                     <td className="text-center">
-                                        {order.quantity}
+                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.price_at_purchase)}
                                     </td>
                                     <td className="font-semibold text-primary">
                                         {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total_price)}
@@ -137,7 +249,7 @@ export function ShopOrders() {
                                                     window.URL.revokeObjectURL(url);
                                                     document.body.removeChild(a);
                                                 } catch (error) {
-                                                    console.error("Failed to download order", error);
+                                                    console.error('Failed to download order', error);
                                                 }
                                             }}
                                             title="Tải xuống"
@@ -149,9 +261,7 @@ export function ShopOrders() {
                             ))}
                         </tbody>
                     </table>
-
-                    {/* Pagination */}
-
+                    {/* Pagination can be added here if needed */}
                 </div>
             )}
         </div>
