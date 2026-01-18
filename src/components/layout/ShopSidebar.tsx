@@ -16,7 +16,7 @@ import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { shopsApi } from "../../api";
 import { useAuthStore, useThemeStore } from "../../store";
-import "./Sidebar.css"; 
+import "./Sidebar.css";
 
 export function ShopSidebar() {
     const { shopId } = useParams<{ shopId: string }>();

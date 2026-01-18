@@ -83,7 +83,7 @@ export function ShopOrders() {
                                         {dayjs(order.created_at).format('DD/MM/YYYY HH:mm')}
                                     </td>
                                     <td>
-                                        <button 
+                                        <button
                                             className="btn btn-sm btn-ghost text-primary"
                                             onClick={async () => {
                                                 try {
