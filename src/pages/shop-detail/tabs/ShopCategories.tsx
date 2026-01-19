@@ -594,7 +594,6 @@ export function ShopCategories() {
                           <th style={{ width: 40 }}></th>
                           <th>Tên</th>
                           <th>Giá</th>
-                          <th>Trạng thái</th>
                           <th>Số lượng</th>
                           <th style={{ width: 100 }}></th>
                         </tr>
@@ -616,27 +615,6 @@ export function ShopCategories() {
                                 <div className="text-xs text-secondary truncate max-w-[120px]">{res.description.slice(0, 24) + (res.description.length > 24 ? '...' : '')}</div>
                               </td>
                               <td>{res.price?.toLocaleString()} đ</td>
-                              <td>
-                                <button
-                                  className={`status-toggle ${res.is_active ? "available" : "sold"
-                                    }`}
-                                  style={{ border: "none", background: "none", padding: 0 }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleResourceStatusMutation.mutate({
-                                      id: res.id,
-                                      is_active: !res.is_active,
-                                    });
-                                  }}
-                                  title={res.is_active ? "Vô hiệu hóa" : "Kích hoạt"}
-                                >
-                                  {res.is_active ? (
-                                    <ToggleRight size={28} className="text-success" />
-                                  ) : (
-                                    <ToggleLeft size={28} className="text-secondary" />
-                                  )}
-                                </button>
-                              </td>
                               <td>{res.total_inventory}</td>
                               <td onClick={(e) => e.stopPropagation()}>
                                 <div className="flex gap-2 justify-end">
@@ -655,16 +633,24 @@ export function ShopCategories() {
                                     <Edit2 size={16} />
                                   </button>
                                   <button
-                                    className="btn btn-ghost btn-sm text-error tooltip"
-                                    data-tip="Xóa sản phẩm"
-                                    onClick={() => {
-                                      if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
-                                        deleteResourceMutation.mutate(res.id);
-                                      }
-                                    }}
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
+                                  className={`status-toggle ${res.is_active ? "available" : "sold"
+                                    }`}
+                                  style={{ border: "none", background: "none", padding: 0 }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleResourceStatusMutation.mutate({
+                                      id: res.id,
+                                      is_active: !res.is_active,
+                                    });
+                                  }}
+                                  title={res.is_active ? "Vô hiệu hóa" : "Kích hoạt"}
+                                >
+                                  {res.is_active ? (
+                                    <ToggleRight size={28} className="text-success" />
+                                  ) : (
+                                    <ToggleLeft size={28} className="text-secondary" />
+                                  )}
+                                </button>
                                 </div>
                               </td>
                             </SortableRow>
