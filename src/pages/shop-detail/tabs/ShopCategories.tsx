@@ -254,14 +254,14 @@ export function ShopCategories() {
     onError: () => toast.error("Cập nhật sản phẩm thất bại"),
   });
 
-  const deleteResourceMutation = useMutation({
-    mutationFn: (id: string) => resourcesApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["resources", shopId, selectedCategory?.id] });
-      toast.success("Xóa sản phẩm thành công!");
-    },
-    onError: () => toast.error("Xóa thất bại"),
-  });
+  // const deleteResourceMutation = useMutation({
+  //   mutationFn: (id: string) => resourcesApi.delete(id),
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ["resources", shopId, selectedCategory?.id] });
+  //     toast.success("Xóa sản phẩm thành công!");
+  //   },
+  //   onError: () => toast.error("Xóa thất bại"),
+  // });
 
   const toggleResourceStatusMutation = useMutation({
     mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
